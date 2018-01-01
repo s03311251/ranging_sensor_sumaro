@@ -8,38 +8,40 @@
 #ifndef SOFTI2C_H_
 #define SOFTI2C_H_
 
- #include <stdint.h>
+#include <stdint.h>
 
-struct softI2CDriver {
+typedef struct softI2CDriver {
 	//const softI2CConfig *config;
-	ioportid_t sdaPort;
+	//ioportid_t sdaPort;
+	uint8_t sdaPort;
 	uint8_t sdaPad;
-	ioportid_t sclPort;
+	//ioportid_t sclPort;
+	uint8_t sclPort;
 	uint8_t sclPad;
-};
+} softI2CDriver;
 
 /*
  class SoftWire {
  public:*/
-enum result_t {
+typedef enum result_t {
 	ack = 0, nack = 1, timedOut = 2,
-};
+} result_t;
 /*
  enum mode_t {
  writeMode = 0,
  readMode = 1,
  };
-
+ */
  static const uint8_t defaultDelay_us = 10;
  static const uint16_t defaultTimeout_ms = 100;
 
- static void setSdaLow(const SoftWire *p);
- static void setSdaHigh(const SoftWire *p);
- static void setSclLow(const SoftWire *p);
- static void setSclHigh(const SoftWire *p);
- static uint8_t readSda(const SoftWire *p);
- static uint8_t readScl(const SoftWire *p);
-
+void softI2C_setSdaLow(const softI2CDriver *si2cp);
+void softI2C_setSdaHigh(const softI2CDriver *si2cp);
+void softI2C_setSclLow(const softI2CDriver *si2cp);
+void softI2C_setSclHigh(const softI2CDriver *si2cp);
+_Bool softI2C_readSda(const softI2CDriver *si2cp);
+_Bool softI2C_readScl(const softI2CDriver *si2cp);
+/*
  // SMBus uses CRC-8 for its PEC
  static uint8_t crc8_update(uint8_t crc, uint8_t data);
 
@@ -63,15 +65,15 @@ enum result_t {
  // to the SDA and/or SCL pins.
  void begin(void) const;
 
-
+ */
  // Functions which take raw addresses (ie address passed must
  // already indicate read/write mode)
- result_t llStart(uint8_t rawAddr) const;
- result_t llRepeatedStart(uint8_t rawAddr) const;
- result_t llStartWait(uint8_t rawAddr) const;
-
- void stop(void) const;
-
+result_t softI2C_llStart(const softI2CDriver *si2cp, uint8_t rawAddr);
+result_t softI2C_llRepeatedStart(const softI2CDriver *si2cp, uint8_t rawAddr);
+result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr);
+void softI2C_begin(const softI2CDriver *si2cp);
+void softI2C_stop(const softI2CDriver *si2cp);
+/*
  inline result_t startRead(uint8_t addr) const;
  inline result_t startWrite(uint8_t addr) const;
  inline result_t repeatedStartRead(uint8_t addr) const;
@@ -82,10 +84,10 @@ enum result_t {
  inline result_t start(uint8_t addr, mode_t rwMode) const;
  inline result_t repeatedStart(uint8_t addr, mode_t rwMode) const;
  inline result_t startWait(uint8_t addr, mode_t rwMode) const;
-
- result_t write(uint8_t data) const;
- result_t read(uint8_t &data, bool sendAck = true) const;
- inline result_t readThenAck(uint8_t &data) const;
+ */
+result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data);
+result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck);
+/*inline result_t readThenAck(uint8_t &data) const;
  inline result_t readThenNack(uint8_t &data) const;
 
  inline void setSdaLow(void) const;
@@ -98,9 +100,9 @@ enum result_t {
  private:
  uint8_t _sda;
  uint8_t _scl;
- uint8_t _inputMode;
- uint8_t _delay_us;*/
- uint16_t _timeout_ms;
+ uint8_t _inputMode;*/
+uint8_t softI2C_delay_us = defaultDelay_us;
+uint16_t softI2C_timeout_ms = defaultTimeout_ms;
 /*
  public:
  void (*_setSdaLow)(const SoftWire *p);

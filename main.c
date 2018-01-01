@@ -19,6 +19,7 @@
 #include "ch_test.h"
 
 //#include "VL53L0X.h"
+#include "softI2C.h"
 
 #define LINE_ARD_D14                PAL_LINE(GPIOB, 9U)
 #define LINE_ARD_D15                PAL_LINE(GPIOB, 8U)
@@ -103,6 +104,9 @@ int main(void) {
   while (true) {
     if (!palReadPad(GPIOC, GPIOC_BUTTON))
       test_execute((BaseSequentialStream *)&SD2);
-    chThdSleepMilliseconds(500);
+		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
+		i2cMasterTransmitTimeout(&I2CD1, 0x04, txbuf, 3, NULL, 0,
+				TIME_INFINITE);
+		chThdSleepMilliseconds(100);
   }
 }

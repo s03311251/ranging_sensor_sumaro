@@ -113,9 +113,9 @@ CSRC = $(STARTUPSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(TESTSRC) \
+       softI2C.c \
        main.c
 #       VL53L0X.c \
-#       softI2C.c \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.

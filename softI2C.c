@@ -5,7 +5,10 @@
  *      Author: m2
  */
 
-#include <softI2C.h>
+#include "softI2C.h"
+
+extern uint8_t softI2C_delay_us = defaultDelay_us;
+extern uint16_t softI2C_timeout_ms = defaultTimeout_ms;
 
 //void I2Cstart(I2CDriver *i2cp, const I2CConfig *config) {
 /*void softI2Cstart(softI2CDriver *si2cp) {
@@ -158,7 +161,7 @@ result_t softI2C_llRepeatedStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	softI2C_setSdaLow(si2cp);
 	chThdSleepMicroseconds(softI2C_delay_us);
 
-	return softI2C_write(rawAddr);
+	return softI2C_write(si2cp, rawAddr);
 }
 
 result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
@@ -174,8 +177,9 @@ result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
 		case ack:
 			return ack;
 		case nack:
-			// stop() twice here WTF?
+			// Arduino SoftWire stop() twice here WTF?
 			softI2C_stop(si2cp);
+			return nack;
 		default:
 			// timeout, and anything else we don't know about
 			softI2C_stop(si2cp);
@@ -186,7 +190,8 @@ result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
 }
 
 result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
-	systime_t timeout_start = chVTGetSystemTime();
+	//systime_t timeout_start = chVTGetSystemTime();
+	uint32_t timeout_start = chVTGetSystemTime();
 	for (uint8_t i = 8; i; --i) {
 		// Force SCL low
 		softI2C_setSclLow(si2cp);
@@ -226,7 +231,7 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 	// Wait for SCL to be set high (in case wait states are inserted)
 	while (softI2C_readScl(si2cp) == 0) {
 		if (chVTTimeElapsedSinceX(timeout_start) > MS2ST(softI2C_timeout_ms)) {
-			stop(); // Reset bus
+			softI2C_stop(si2cp); // Reset bus
 			return timedOut;
 		}
 	}
@@ -243,7 +248,8 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 
 result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck) {
 	data = 0;
-	systime_t timeout_start = chVTGetSystemTime();
+	//systime_t timeout_start = chVTGetSystemTime();
+	uint32_t timeout_start = chVTGetSystemTime();
 
 	for (uint8_t i = 8; i; --i) {
 		data <<= 1;
@@ -290,7 +296,7 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck) {
 	chThdSleepMicroseconds(softI2C_delay_us);
 
 	// Wait for SCL to return high
-	while (_readScl(this) == LOW) {
+	while (softI2C_readScl(si2cp) == 0) {
 		if (chVTTimeElapsedSinceX(timeout_start) > MS2ST(softI2C_timeout_ms)) {
 			softI2C_stop(si2cp); // Reset bus
 			return timedOut;

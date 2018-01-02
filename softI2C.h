@@ -9,14 +9,14 @@
 #define SOFTI2C_H_
 
 #include <stdint.h>
+#include "ch.h"
+#include "hal.h"
 
 typedef struct softI2CDriver {
 	//const softI2CConfig *config;
-	//ioportid_t sdaPort;
-	uint8_t sdaPort;
+	ioportid_t sdaPort;
 	uint8_t sdaPad;
-	//ioportid_t sclPort;
-	uint8_t sclPort;
+	ioportid_t sclPort;
 	uint8_t sclPad;
 } softI2CDriver;
 
@@ -32,8 +32,9 @@ typedef enum result_t {
  readMode = 1,
  };
  */
- static const uint8_t defaultDelay_us = 10;
- static const uint16_t defaultTimeout_ms = 100;
+
+#define defaultDelay_us 10
+#define defaultTimeout_ms 100
 
 void softI2C_setSdaLow(const softI2CDriver *si2cp);
 void softI2C_setSdaHigh(const softI2CDriver *si2cp);
@@ -101,8 +102,6 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck);
  uint8_t _sda;
  uint8_t _scl;
  uint8_t _inputMode;*/
-uint8_t softI2C_delay_us = defaultDelay_us;
-uint16_t softI2C_timeout_ms = defaultTimeout_ms;
 /*
  public:
  void (*_setSdaLow)(const SoftWire *p);
@@ -164,13 +163,12 @@ uint16_t softI2C_timeout_ms = defaultTimeout_ms;
  _delay_us = delay_us;
  }
 
- */
- void SoftWire::setTimeout_ms(uint16_t timeout_ms)
- {
+
+ void SoftWire::setTimeout_ms(uint16_t timeout_ms) {
  _timeout_ms = timeout_ms;
  }
 
-/*
+
  SoftWire::result_t SoftWire::startRead(uint8_t addr) const
  {
  return llStart((addr << 1) + readMode);
@@ -260,4 +258,5 @@ uint16_t softI2C_timeout_ms = defaultTimeout_ms;
  _setSclHigh(this);
  }
  */
+
 #endif /* SOFTI2C_H_ */

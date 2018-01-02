@@ -43,23 +43,6 @@ static THD_FUNCTION(Thread1, arg) {
 }
 
 /*
- * Don't know do what good
-
-static THD_WORKING_AREA(waThread2, 128);
-static THD_FUNCTION(Thread2, arg) {
-
-	(void) arg;
-	chRegSetThreadName("blinker");
-	while (true) {
-		palClearPad(GPIOA, GPIOA_LED_GREEN);
-		chThdSleepMilliseconds(500);
-		palSetPad(GPIOA, GPIOA_LED_GREEN);
-		chThdSleepMilliseconds(500);
-	}
-}
- */
-
-/*
  * Application entry point.
  */
 int main(void) {
@@ -83,30 +66,40 @@ int main(void) {
 	 * Creates the blinker thread.
 	 */
 	chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO + 1, Thread1,
-			NULL);
-	//chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO + 1, Thread2,
-	//		NULL);
+	NULL);
 
 	/* Configuring I2C related PINs */
 	palSetLineMode(LINE_ARD_D15,
-			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN
-					| PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 	palSetLineMode(LINE_ARD_D14,
-			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN
-					| PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 
 	i2cStart(&I2CD1, &i2ccfg);
+
+	softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
   /*
    * Normal main() thread activity, in this demo it does nothing except
    * sleeping in a loop and check the button state.
    */
-  while (true) {
-    if (!palReadPad(GPIOC, GPIOC_BUTTON))
-      test_execute((BaseSequentialStream *)&SD2);
+	while (true) {
+		if (!palReadPad(GPIOC, GPIOC_BUTTON)) {
+			test_execute((BaseSequentialStream *) &SD2);
+		}
 		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
 		i2cMasterTransmitTimeout(&I2CD1, 0x04, txbuf, 3, NULL, 0,
-				TIME_INFINITE);
+		TIME_INFINITE);
+
+		if (softI2C_llStartWait(&SI2CD1, 0x04 << 1) == ack) {
+			softI2C_write(&SI2CD1, txbuf[0]);
+			softI2C_write(&SI2CD1, txbuf[1]);
+			softI2C_write(&SI2CD1, txbuf[2]);
+			softI2C_stop(&SI2CD1);
+		}
+
 		chThdSleepMilliseconds(100);
+
+
+
   }
 }

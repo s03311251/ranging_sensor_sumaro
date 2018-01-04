@@ -87,7 +87,7 @@ void softI2C_stop(const softI2CDriver *si2cp);
  inline result_t startWait(uint8_t addr, mode_t rwMode) const;
  */
 result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data);
-result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck);
+result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck);
 /*inline result_t readThenAck(uint8_t &data) const;
  inline result_t readThenNack(uint8_t &data) const;
 

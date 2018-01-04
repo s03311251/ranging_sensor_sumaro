@@ -7,8 +7,8 @@
 
 #include "softI2C.h"
 
-extern uint8_t softI2C_delay_us = defaultDelay_us;
-extern uint16_t softI2C_timeout_ms = defaultTimeout_ms;
+uint8_t softI2C_delay_us = defaultDelay_us;
+uint16_t softI2C_timeout_ms = defaultTimeout_ms;
 
 //void I2Cstart(I2CDriver *i2cp, const I2CConfig *config) {
 /*void softI2Cstart(softI2CDriver *si2cp) {
@@ -20,6 +20,15 @@ extern uint16_t softI2C_timeout_ms = defaultTimeout_ms;
 
 
 
+
+
+void softI2C_SleepMicroseconds(uint8_t softI2C_delay_us) {
+	chThdSleepMicroseconds(softI2C_delay_us);
+
+//	uint32_t timeout_start = chVTGetSystemTime();
+//	while (chVTTimeElapsedSinceX(timeout_start) <= US2ST(softI2C_delay_us))
+//		;
+}
 
 
 
@@ -116,30 +125,31 @@ void softI2C_begin(const softI2CDriver *si2cp) {
 
 void softI2C_stop(const softI2CDriver *si2cp) {
 	// Force SCL low
-	softI2C_setSclLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	// Why SCL low here?
+//	softI2C_setSclLow(si2cp);
+//	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Force SDA low
 	softI2C_setSdaLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Release SDA
 	softI2C_setSdaHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 }
 
 result_t softI2C_llStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	// Force SDA low
 	softI2C_setSdaLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Force SCL low
 	softI2C_setSclLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	return softI2C_write(si2cp, rawAddr);
 }
@@ -147,19 +157,19 @@ result_t softI2C_llStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 result_t softI2C_llRepeatedStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	// Force SCL low
 	softI2C_setSclLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Release SDA
 	softI2C_setSdaHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Force SDA low
 	softI2C_setSdaLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	return softI2C_write(si2cp, rawAddr);
 }
@@ -171,7 +181,7 @@ result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	while (chVTTimeElapsedSinceX(timeout_start) <= MS2ST(softI2C_timeout_ms)) {
 		// Force SDA low
 		softI2C_setSdaLow(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		softI2C_SleepMicroseconds(softI2C_delay_us);
 
 		switch (softI2C_write(si2cp, rawAddr)) {
 		case ack:
@@ -203,11 +213,11 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 		// Force SDA low
 			softI2C_setSdaLow(si2cp);
 		}
-		chThdSleepMicroseconds(softI2C_delay_us);
+		softI2C_SleepMicroseconds(softI2C_delay_us);
 
 		// Release SCL
 		softI2C_setSclHigh(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		softI2C_SleepMicroseconds(softI2C_delay_us);
 
 		data <<= 1;
 
@@ -223,7 +233,7 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 
 	// Release SDA
 	softI2C_setSdaHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
@@ -238,7 +248,7 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 
 	result_t res = (softI2C_readSda(si2cp) == 0 ? ack : nack);
 
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Keep SCL low between bytes
 	softI2C_setSclLow(si2cp);
@@ -246,24 +256,24 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 	return res;
 }
 
-result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck) {
-	data = 0;
+result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck) {
+	*data = 0;
 	//systime_t timeout_start = chVTGetSystemTime();
 	uint32_t timeout_start = chVTGetSystemTime();
 
 	for (uint8_t i = 8; i; --i) {
-		data <<= 1;
+		*data <<= 1;
 
 		// Force SCL low
 		softI2C_setSclLow(si2cp);
 
 		// Release SDA (from previous ACK)
 		softI2C_setSdaHigh(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		softI2C_SleepMicroseconds(softI2C_delay_us);
 
 		// Release SCL
 		softI2C_setSclHigh(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		softI2C_SleepMicroseconds(softI2C_delay_us);
 
 		// Read clock stretch
 		while (softI2C_readScl(si2cp) == 0)
@@ -274,7 +284,7 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck) {
 			}
 
 		if (softI2C_readSda(si2cp))
-			data |= 1;
+			*data |= 1;
 	}
 
 	// Put ACK/NACK
@@ -289,11 +299,10 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck) {
 		softI2C_setSdaHigh(si2cp);
 	}
 
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 	
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
 
 	// Wait for SCL to return high
 	while (softI2C_readScl(si2cp) == 0) {
@@ -303,7 +312,7 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t data, _Bool sendAck) {
 		}
 	}
 
-	chThdSleepMicroseconds(softI2C_delay_us);
+	softI2C_SleepMicroseconds(softI2C_delay_us);
 
 	// Keep SCL low between bytes
 	softI2C_setSclLow(si2cp);

@@ -33,7 +33,7 @@ typedef enum result_t {
  };
  */
 
-#define defaultDelay_us 10
+#define defaultDelay_us 1
 #define defaultTimeout_ms 100
 
 void softI2C_setSdaLow(const softI2CDriver *si2cp);

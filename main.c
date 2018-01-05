@@ -76,16 +76,16 @@ int main(void) {
 
 	i2cStart(&I2CD1, &i2ccfg);
 
-	//softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
+	softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
   /*
    * Normal main() thread activity, in this demo it does nothing except
    * sleeping in a loop and check the button state.
    */
 	while (true) {
-		//if (!palReadPad(GPIOC, GPIOC_BUTTON)) {
-		//	test_execute((BaseSequentialStream *) &SD2);
-		//}
+		if (!palReadPad(GPIOC, GPIOC_BUTTON)) {
+			test_execute((BaseSequentialStream *) &SD2);
+		}
 
 //		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
 //		i2cMasterTransmitTimeout(&I2CD1, 0x04, txbuf, 3, NULL, 0,
@@ -125,20 +125,20 @@ int main(void) {
 
 		uint8_t txbuf[2] = { 'a', 'A' };
 		uint8_t rxbuf[2] = { 'z', 'Z' };
-		i2cMasterTransmitTimeout(&I2CD1, 0x10, txbuf, 2, rxbuf, 2,
-		TIME_INFINITE);
+//		i2cMasterTransmitTimeout(&I2CD1, 0x10, txbuf, 2, rxbuf, 2,
+//				TIME_INFINITE);
 
 // softi2cMasterTransmitTimeout()
-//		if (softI2C_llStartWait(&SI2CD1, 0x10 << 1) == ack) {
-//			softI2C_write(&SI2CD1, txbuf[0]);
-//			softI2C_write(&SI2CD1, txbuf[1]);
-//
-//			if (softI2C_llRepeatedStart(&SI2CD1, (0x10 << 1) + 1) == ack) {
-//				softI2C_read(&SI2CD1, &rxbuf[0], true);
-//				softI2C_read(&SI2CD1, &rxbuf[1], false);
-//				softI2C_stop(&SI2CD1);
-//			}
-//		}
+		if (softI2C_llStartWait(&SI2CD1, 0x10 << 1) == ack) {
+			softI2C_write(&SI2CD1, txbuf[0]);
+			softI2C_write(&SI2CD1, txbuf[1]);
+
+			if (softI2C_llRepeatedStart(&SI2CD1, (0x10 << 1) + 1) == ack) {
+				softI2C_read(&SI2CD1, &rxbuf[0], true);
+				softI2C_read(&SI2CD1, &rxbuf[1], false);
+				softI2C_stop(&SI2CD1);
+			}
+		}
 
 
 

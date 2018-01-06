@@ -74,7 +74,11 @@ int main(void) {
 	palSetLineMode(LINE_ARD_D14,
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 
-	i2cStart(&I2CD1, &i2ccfg);
+	palSetPadMode(GPIOB, 5U, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(GPIOB, 4U, PAL_MODE_OUTPUT_OPENDRAIN);
+	
+	
+//	i2cStart(&I2CD1, &i2ccfg);
 
 	softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
@@ -126,19 +130,21 @@ int main(void) {
 		uint8_t txbuf[2] = { 'a', 'A' };
 		uint8_t rxbuf[2] = { 'z', 'Z' };
 //		i2cMasterTransmitTimeout(&I2CD1, 0x10, txbuf, 2, rxbuf, 2,
-//				TIME_INFINITE);
+//		TIME_INFINITE);
+		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
+		TIME_INFINITE);
 
 // softi2cMasterTransmitTimeout()
-		if (softI2C_llStartWait(&SI2CD1, 0x10 << 1) == ack) {
-			softI2C_write(&SI2CD1, txbuf[0]);
-			softI2C_write(&SI2CD1, txbuf[1]);
-
-			if (softI2C_llRepeatedStart(&SI2CD1, (0x10 << 1) + 1) == ack) {
-				softI2C_read(&SI2CD1, &rxbuf[0], true);
-				softI2C_read(&SI2CD1, &rxbuf[1], false);
-				softI2C_stop(&SI2CD1);
-			}
-		}
+//		if (softI2C_llStartWait(&SI2CD1, 0x10 << 1) == ack) {
+//			softI2C_write(&SI2CD1, txbuf[0]);
+//			softI2C_write(&SI2CD1, txbuf[1]);
+//
+//			if (softI2C_llRepeatedStart(&SI2CD1, (0x10 << 1) + 1) == ack) {
+//				softI2C_read(&SI2CD1, &rxbuf[0], true);
+//				softI2C_read(&SI2CD1, &rxbuf[1], false);
+//				softI2C_stop(&SI2CD1);
+//			}
+//		}
 
 
 

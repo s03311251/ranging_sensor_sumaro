@@ -24,7 +24,9 @@
 #define LINE_ARD_D14                PAL_LINE(GPIOB, 9U)
 #define LINE_ARD_D15                PAL_LINE(GPIOB, 8U)
 
-static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE, };
+//static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE, };
+softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
+softI2CDriver SI2CD2 = { GPIOB, 10, GPIOA, 8 };
 
 /*
  * Green LED blinker thread, times are in milliseconds.
@@ -41,6 +43,32 @@ static THD_FUNCTION(Thread1, arg) {
     chThdSleepMilliseconds(500);
   }
 }
+
+static THD_WORKING_AREA(waThread2, 128);
+static THD_FUNCTION(Thread2, arg) {
+	(void) arg;
+	chRegSetThreadName("1st I2C");
+	while (true) {
+		uint8_t txbuf[2] = { 'a', 'A' };
+		uint8_t rxbuf[2] = { 'z', 'Z' };
+		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
+		TIME_INFINITE);
+		for (int i = 0; i < 2; i++)
+			sdPut(&SD2, rxbuf[i]);
+	}
+}
+
+static THD_WORKING_AREA(waThread3, 128);
+static THD_FUNCTION(Thread3, arg) {
+	(void) arg;
+	chRegSetThreadName("2nd I2C");
+	while (true) {
+	}
+}
+
+
+
+
 
 /*
  * Application entry point.
@@ -65,98 +93,65 @@ int main(void) {
 	/*
 	 * Creates the blinker thread.
 	 */
-	chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO + 1, Thread1,
-	NULL);
+//	chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO + 1, Thread1,
+//	NULL);
+//	chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO + 1, Thread2,
+//	NULL);
+//	chThdCreateStatic(waThread3, sizeof(waThread3), NORMALPRIO + 1, Thread3,
+//	NULL);
 
 	/* Configuring I2C related PINs */
-	palSetLineMode(LINE_ARD_D15,
-			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
-	palSetLineMode(LINE_ARD_D14,
-			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+	
+//	palSetLineMode(LINE_ARD_D15,
+//			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+//	palSetLineMode(LINE_ARD_D14,
+//			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 
 	palSetPadMode(GPIOB, 5U, PAL_MODE_OUTPUT_OPENDRAIN);
 	palSetPadMode(GPIOB, 4U, PAL_MODE_OUTPUT_OPENDRAIN);
-	
+	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 	
 //	i2cStart(&I2CD1, &i2ccfg);
-
-	softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
   /*
    * Normal main() thread activity, in this demo it does nothing except
    * sleeping in a loop and check the button state.
    */
 	while (true) {
-		if (!palReadPad(GPIOC, GPIOC_BUTTON)) {
-			test_execute((BaseSequentialStream *) &SD2);
-		}
+//		if (!palReadPad(GPIOC, GPIOC_BUTTON)) {
+//			test_execute((BaseSequentialStream *) &SD2);
+//		}
 
 //		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
-//		i2cMasterTransmitTimeout(&I2CD1, 0x04, txbuf, 3, NULL, 0,
-//		TIME_INFINITE);
-//
-//		// softi2cMasterTransmitTimeout()
-//		if (softI2C_llStartWait(&SI2CD1, 0x04 << 1) == ack) {
-//			softI2C_write(&SI2CD1, txbuf[0]);
-//			softI2C_write(&SI2CD1, txbuf[1]);
-//			softI2C_write(&SI2CD1, txbuf[2]);
-//			softI2C_stop(&SI2CD1);
-//		}
+//		softi2cMasterTransmitTimeout(&SI2CD1, 0x04, txbuf, 3, NULL, 0,
+//				TIME_INFINITE);
 
-
-
-
-
-
+		
+		
 //		uint8_t rxbuf[6] = { 'U', 'f', 'a', 'i', 'l', ' ', };
-//		i2cMasterReceiveTimeout(&I2CD1, 0x10, rxbuf, 6, TIME_INFINITE);
-//
-//		// softi2cMasterReceiveTimeout()
-//		if (softI2C_llStartWait(&SI2CD1, (0x08 << 1) + 1) == ack) {
-//			for (int i = 0; i < 6 - 1; i++)
-//				softI2C_read(&SI2CD1, &rxbuf[i], true);
-//			softI2C_read(&SI2CD1, &rxbuf[6], false);
-//			softI2C_stop(&SI2CD1);
-//		}
-//
+//		softi2cMasterReceiveTimeout(&SI2CD1, 0x10, rxbuf, 6, TIME_INFINITE);
 //		for (int i = 0; i < 6; i++)
 //			sdPut(&SD2, rxbuf[i]);
 
-
-
-
-
-
-		uint8_t txbuf[2] = { 'a', 'A' };
-		uint8_t rxbuf[2] = { 'z', 'Z' };
-//		i2cMasterTransmitTimeout(&I2CD1, 0x10, txbuf, 2, rxbuf, 2,
+		
+		
+//		uint8_t txbuf[2] = { 'a', 'A' };
+//		uint8_t rxbuf[2] = { 'z', 'Z' };
+//		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
 //		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+
+		uint8_t txbuf[2] = { 'c', 'C' };
+		uint8_t rxbuf[2] = { 'y', 'Y' };
 		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
 		TIME_INFINITE);
-
-// softi2cMasterTransmitTimeout()
-//		if (softI2C_llStartWait(&SI2CD1, 0x10 << 1) == ack) {
-//			softI2C_write(&SI2CD1, txbuf[0]);
-//			softI2C_write(&SI2CD1, txbuf[1]);
-//
-//			if (softI2C_llRepeatedStart(&SI2CD1, (0x10 << 1) + 1) == ack) {
-//				softI2C_read(&SI2CD1, &rxbuf[0], true);
-//				softI2C_read(&SI2CD1, &rxbuf[1], false);
-//				softI2C_stop(&SI2CD1);
-//			}
-//		}
-
-
-
-
-
-
-
-
 		for (int i = 0; i < 2; i++)
 			sdPut(&SD2, rxbuf[i]);
+		
 
-		chThdSleepMilliseconds(1000);
+//		chThdSleepMilliseconds(100);
 
 
 

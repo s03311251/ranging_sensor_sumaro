@@ -19,9 +19,9 @@ uint32_t softI2C_timeout = defaultTimeout;
  */
 
 void softi2cMasterTransmitTimeout(softI2CDriver *si2cp,
-		i2caddr_t addr, // 7-bit address
+		uint16_t addr, // 7-bit address
 		const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes,
-		uint32_t timeout) {
+		systime_t timeout) {
 	softI2C_timeout = timeout;
 
 	if (softI2C_llStartWait(si2cp, addr << 1) != ack) {
@@ -49,14 +49,28 @@ void softi2cMasterTransmitTimeout(softI2CDriver *si2cp,
 			return;
 		}
 	}
-
 	softI2C_stop(si2cp);
 }
 
-void softi2cMasterReceiveTimeout(softI2CDriver *si2cp, i2caddr_t addr, // 7-bit address
-		uint8_t *rxbuf, size_t rxbytes, uint32_t timeout) {
+void softi2cMasterReceiveTimeout(softI2CDriver *si2cp, uint16_t addr, // 7-bit address
+		uint8_t *rxbuf, size_t rxbytes, systime_t timeout) {
 	softI2C_timeout = timeout;
+
+	if (softI2C_llStartWait(si2cp, (addr << 1) + 1) != ack) {
+		return;
 	}
+
+	for (size_t i = 0; i < rxbytes - 1; i++) {
+		if (softI2C_read(si2cp, &rxbuf[i], true) != ack) {
+			return;
+		}
+	}
+
+	if (softI2C_read(si2cp, &rxbuf[rxbytes - 1], false) != ack) {
+		return;
+	}
+	softI2C_stop(si2cp);
+}
 
  // Force SDA low
 void softI2C_setSdaLow(const softI2CDriver *si2cp) {

@@ -20,13 +20,27 @@
 
 //#include "VL53L0X.h"
 #include "softI2C.h"
+#include "parallel_softI2C.h"
 
 #define LINE_ARD_D14                PAL_LINE(GPIOB, 9U)
 #define LINE_ARD_D15                PAL_LINE(GPIOB, 8U)
 
 //static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE, };
-softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
-softI2CDriver SI2CD2 = { GPIOB, 10, GPIOA, 8 };
+
+//softI2CDriver SI2CD3 = { GPIOA, 9, GPIOC, 7 };
+//softI2CDriver SI2CD4 = { GPIOB, 6, GPIOA, 7 };
+//softI2CDriver SI2CD5 = { GPIOB, 13, GPIOB, 14 };
+//softI2CDriver SI2CD6 = { GPIOB, 15, GPIOB, 1 };
+//softI2CDriver SI2CD7 = { GPIOB, 12, GPIOA, 11 };
+//softI2CDriver SI2CD8 = { GPIOC, 5, GPIOC, 6 };
+//softI2CDriver SI2CD9 = { GPIOC, 0, GPIOC, 1 };
+//softI2CDriver SI2CD10 = { GPIOB, 0, GPIOA, 4 };
+//softI2CDriver SI2CD11 = { GPIOA, 1, GPIOA, 0 };
+//softI2CDriver SI2CD12 = { GPIOD, 2, GPIOC, 11 };
+//softI2CDriver SI2CD13 = { GPIOC, 2, GPIOC, 3 };
+//softI2CDriver SI2CD14 = { GPIOA, 15, GPIOC, 10 };
+//softI2CDriver SI2CD15 = { GPIOC, 12, GPIOC, 4 };
+//softI2CDriver SI2CD16 = { GPIOB, 2, GPIOA, 12 };
 
 /*
  * Green LED blinker thread, times are in milliseconds.
@@ -44,31 +58,215 @@ static THD_FUNCTION(Thread1, arg) {
   }
 }
 
-static THD_WORKING_AREA(waThread2, 128);
-static THD_FUNCTION(Thread2, arg) {
-	(void) arg;
-	chRegSetThreadName("1st I2C");
-	while (true) {
-		uint8_t txbuf[2] = { 'a', 'A' };
-		uint8_t rxbuf[2] = { 'z', 'Z' };
-		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
-		TIME_INFINITE);
-		for (int i = 0; i < 2; i++)
-			sdPut(&SD2, rxbuf[i]);
-	}
-}
-
-static THD_WORKING_AREA(waThread3, 128);
-static THD_FUNCTION(Thread3, arg) {
-	(void) arg;
-	chRegSetThreadName("2nd I2C");
-	while (true) {
-	}
-}
-
-
-
-
+//static THD_WORKING_AREA(waThread2, 128);
+//static THD_FUNCTION(Thread2, arg) {
+//	(void) arg;
+//	chRegSetThreadName("2nd I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD2, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread3, 128);
+//static THD_FUNCTION(Thread3, arg) {
+//	(void) arg;
+//	chRegSetThreadName("3rd I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD3, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread4, 128);
+//static THD_FUNCTION(Thread4, arg) {
+//	(void) arg;
+//	chRegSetThreadName("4th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD4, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread5, 128);
+//static THD_FUNCTION(Thread5, arg) {
+//	(void) arg;
+//	chRegSetThreadName("5th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD5, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread6, 128);
+//static THD_FUNCTION(Thread6, arg) {
+//	(void) arg;
+//	chRegSetThreadName("6th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD6, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread7, 128);
+//static THD_FUNCTION(Thread7, arg) {
+//	(void) arg;
+//	chRegSetThreadName("7th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD7, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread8, 128);
+//static THD_FUNCTION(Thread8, arg) {
+//	(void) arg;
+//	chRegSetThreadName("8th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD8, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread9, 128);
+//static THD_FUNCTION(Thread9, arg) {
+//	(void) arg;
+//	chRegSetThreadName("9th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD9, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread10, 128);
+//static THD_FUNCTION(Thread10, arg) {
+//	(void) arg;
+//	chRegSetThreadName("10th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD10, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread11, 128);
+//static THD_FUNCTION(Thread11, arg) {
+//	(void) arg;
+//	chRegSetThreadName("11th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD11, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread12, 128);
+//static THD_FUNCTION(Thread12, arg) {
+//	(void) arg;
+//	chRegSetThreadName("12th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD12, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread13, 128);
+//static THD_FUNCTION(Thread13, arg) {
+//	(void) arg;
+//	chRegSetThreadName("13th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD13, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread14, 128);
+//static THD_FUNCTION(Thread14, arg) {
+//	(void) arg;
+//	chRegSetThreadName("14th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD14, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread15, 128);
+//static THD_FUNCTION(Thread15, arg) {
+//	(void) arg;
+//	chRegSetThreadName("15th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD15, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
+//
+//static THD_WORKING_AREA(waThread16, 128);
+//static THD_FUNCTION(Thread16, arg) {
+//	(void) arg;
+//	chRegSetThreadName("16th I2C");
+//	while (true) {
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD16, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
+//	}
+//}
 
 /*
  * Application entry point.
@@ -90,15 +288,47 @@ int main(void) {
    */
   sdStart(&SD2, NULL);
 
+	softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
+	softI2CDriver SI2CD2 = { GPIOB, 10, GPIOA, 8 };
+
+	parallel_softI2CDriver PI2CD1 = { { SI2CD1, SI2CD2 }, 2 };
+  
 	/*
 	 * Creates the blinker thread.
 	 */
-//	chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO + 1, Thread1,
-//	NULL);
+	chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO + 1, Thread1,
+	NULL);
 //	chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO + 1, Thread2,
 //	NULL);
 //	chThdCreateStatic(waThread3, sizeof(waThread3), NORMALPRIO + 1, Thread3,
 //	NULL);
+//	chThdCreateStatic(waThread4, sizeof(waThread4), NORMALPRIO + 1, Thread4,
+//	NULL);
+//	chThdCreateStatic(waThread5, sizeof(waThread5), NORMALPRIO + 1, Thread5,
+//	NULL);
+//	chThdCreateStatic(waThread6, sizeof(waThread6), NORMALPRIO + 1, Thread6,
+//	NULL);
+//	chThdCreateStatic(waThread7, sizeof(waThread7), NORMALPRIO + 1, Thread7,
+//	NULL);
+//	chThdCreateStatic(waThread8, sizeof(waThread8), NORMALPRIO + 1, Thread8,
+//	NULL);
+//	chThdCreateStatic(waThread9, sizeof(waThread9), NORMALPRIO + 1, Thread9,
+//	NULL);
+//	chThdCreateStatic(waThread10, sizeof(waThread10), NORMALPRIO + 1, Thread10,
+//	NULL);
+//	chThdCreateStatic(waThread11, sizeof(waThread11), NORMALPRIO + 1, Thread11,
+//	NULL);
+//	chThdCreateStatic(waThread12, sizeof(waThread12), NORMALPRIO + 1, Thread12,
+//	NULL);
+//	chThdCreateStatic(waThread13, sizeof(waThread13), NORMALPRIO + 1, Thread13,
+//	NULL);
+//	chThdCreateStatic(waThread14, sizeof(waThread14), NORMALPRIO + 1, Thread14,
+//	NULL);
+//	chThdCreateStatic(waThread15, sizeof(waThread15), NORMALPRIO + 1, Thread15,
+//	NULL);
+//	chThdCreateStatic(waThread16, sizeof(waThread16), NORMALPRIO + 1, Thread16,
+//	NULL);
+
 
 	/* Configuring I2C related PINs */
 	
@@ -107,10 +337,42 @@ int main(void) {
 //	palSetLineMode(LINE_ARD_D14,
 //			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 
-	palSetPadMode(GPIOB, 5U, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(GPIOB, 4U, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(SI2CD1.sdaPort, SI2CD1.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(SI2CD1.sclPort, SI2CD1.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(SI2CD2.sdaPort, SI2CD2.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(SI2CD2.sclPort, SI2CD2.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD3.sdaPort, SI2CD3.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD3.sclPort, SI2CD3.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD4.sdaPort, SI2CD4.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD4.sclPort, SI2CD4.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD5.sdaPort, SI2CD5.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD5.sclPort, SI2CD5.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD6.sdaPort, SI2CD6.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD6.sclPort, SI2CD6.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD7.sdaPort, SI2CD7.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD7.sclPort, SI2CD7.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD8.sdaPort, SI2CD8.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD8.sclPort, SI2CD8.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD9.sdaPort, SI2CD9.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD9.sclPort, SI2CD9.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD10.sdaPort, SI2CD10.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD10.sclPort, SI2CD10.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD11.sdaPort, SI2CD11.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD11.sclPort, SI2CD11.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD12.sdaPort, SI2CD12.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD12.sclPort, SI2CD12.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD13.sdaPort, SI2CD13.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD13.sclPort, SI2CD13.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD14.sdaPort, SI2CD14.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD14.sclPort, SI2CD14.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD15.sdaPort, SI2CD15.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD15.sclPort, SI2CD15.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD16.sdaPort, SI2CD16.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(SI2CD16.sclPort, SI2CD16.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(GPIOB, 5U, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(GPIOB, 4U, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 	
 //	i2cStart(&I2CD1, &i2ccfg);
 
@@ -133,22 +395,23 @@ int main(void) {
 //		softi2cMasterReceiveTimeout(&SI2CD1, 0x10, rxbuf, 6, TIME_INFINITE);
 //		for (int i = 0; i < 6; i++)
 //			sdPut(&SD2, rxbuf[i]);
-
 		
 		
-//		uint8_t txbuf[2] = { 'a', 'A' };
-//		uint8_t rxbuf[2] = { 'z', 'Z' };
-//		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
-//		TIME_INFINITE);
-//		for (int i = 0; i < 2; i++)
-//			sdPut(&SD2, rxbuf[i]);
-
-		uint8_t txbuf[2] = { 'c', 'C' };
-		uint8_t rxbuf[2] = { 'y', 'Y' };
+		uint8_t txbuf[2] = { 'a', 'A' };
+		uint8_t rxbuf[2] = { 'z', 'Z' };
 		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
+		TIME_INFINITE);
+		softi2cMasterTransmitTimeout(&SI2CD2, 0x10, txbuf, 2, rxbuf, 2,
 		TIME_INFINITE);
 		for (int i = 0; i < 2; i++)
 			sdPut(&SD2, rxbuf[i]);
+
+//		uint8_t txbuf[2] = { 'c', 'C' };
+//		uint8_t rxbuf[2] = { 'y', 'Y' };
+//		softi2cMasterTransmitTimeout(&SI2CD2, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
 		
 
 //		chThdSleepMilliseconds(100);

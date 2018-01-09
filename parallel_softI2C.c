@@ -1,5 +1,5 @@
 /*
- * softI2C.c
+ * parallel_softI2C.c
  *
  *  Created on: 31 Dec 2017
  *      Author: m2
@@ -9,14 +9,6 @@
 
 uint8_t softI2C_delay_us = defaultDelay_us;
 uint32_t softI2C_timeout = defaultTimeout;
-
-//void I2Cstart(I2CDriver *i2cp, const I2CConfig *config) {
-/*void softI2Cstart(softI2CDriver *si2cp) {
-	palSetPadMode(si2cp->sdaPort, si2cp->sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(si2cp->sclPort, si2cp->sckPad, PAL_MODE_OUTPUT_OPENDRAIN);
-
-}
- */
 
 void softi2cMasterTransmitTimeout(softI2CDriver *si2cp,
 		i2caddr_t addr, // 7-bit address
@@ -116,47 +108,7 @@ _Bool softI2C_readScl(const softI2CDriver *si2cp) {
 	return value;
  }
 
-/*
- // For testing the CRC-8 calculator may be useful:
- // http://smbus.org/faq/crc8Applet.htm
- uint8_t SoftWire::crc8_update(uint8_t crc, uint8_t data)
- {
- const uint16_t polynomial = 0x107;
- crc ^= data;
- for (uint8_t i = 8; i; --i) {
- if (crc & 0x80)
- crc = (uint16_t(crc) << 1) ^ polynomial;
- else
- crc <<= 1;
- }
-
- return crc;
- }
-
-
- SoftWire::SoftWire(uint8_t sda, uint8_t scl) :
- _sda(sda),
- _scl(scl),
- _inputMode(INPUT), // Pullups diabled by default
- _delay_us(defaultDelay_us),
- _timeout_ms(defaultTimeout_ms),
- _setSdaLow(setSdaLow),
- _setSdaHigh(setSdaHigh),
- _setSclLow(setSclLow),
- _setSclHigh(setSclHigh),
- _readSda(readSda),
- _readScl(readScl)
- {
- ;
- }
- */
 void softI2C_begin(const softI2CDriver *si2cp) {
-	/*
-	 // Release SDA and SCL
-	 _setSdaHigh(this);
-	 delayMicroseconds(_delay_us);
-	 _setSclHigh(this);
-	 */
 	softI2C_stop(si2cp);
 }
 
@@ -212,8 +164,7 @@ result_t softI2C_llRepeatedStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 }
 
 result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
-	//systime_t timeout_start = chVTGetSystemTime();
-	uint32_t timeout_start = chVTGetSystemTime();
+	systime_t timeout_start = chVTGetSystemTime();
 
 	while (chVTTimeElapsedSinceX(timeout_start) <= softI2C_timeout) {
 		// Force SDA low
@@ -237,8 +188,8 @@ result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
 }
 
 result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
-	//systime_t timeout_start = chVTGetSystemTime();
-	uint32_t timeout_start = chVTGetSystemTime();
+	systime_t timeout_start = chVTGetSystemTime();
+
 	for (uint8_t i = 8; i; --i) {
 		// Force SCL low
 		softI2C_setSclLow(si2cp);

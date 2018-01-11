@@ -27,7 +27,7 @@ typedef enum result_t {
 	ack = 0, nack = 1, timedOut = 2,
 } result_t;
 
-#define defaultDelay_us 5
+#define defaultDelay_us 1
 #define defaultTimeout MS2ST(100)
 
 void softi2cMasterTransmitTimeout(softI2CDriver *i2cp,

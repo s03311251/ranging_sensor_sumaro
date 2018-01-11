@@ -164,29 +164,29 @@ void softI2C_stop(const softI2CDriver *si2cp) {
 	// Force SCL low
 	// Why SCL low here?
 //	softI2C_setSclLow(si2cp);
-//	chThdSleepMicroseconds(softI2C_delay_us);
+//	gptPolledDelay(&GPTD4,softI2C_delay_us);
 
 	// Force SDA low
 	softI2C_setSdaLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Release SDA
 	softI2C_setSdaHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 }
 
 result_t softI2C_llStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	// Force SDA low
 	softI2C_setSdaLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Force SCL low
 	softI2C_setSclLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	return softI2C_write(si2cp, rawAddr);
 }
@@ -194,19 +194,19 @@ result_t softI2C_llStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 result_t softI2C_llRepeatedStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	// Force SCL low
 	softI2C_setSclLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Release SDA
 	softI2C_setSdaHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Force SDA low
 	softI2C_setSdaLow(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	return softI2C_write(si2cp, rawAddr);
 }
@@ -218,7 +218,7 @@ result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
 	while (chVTTimeElapsedSinceX(timeout_start) <= softI2C_timeout) {
 		// Force SDA low
 		softI2C_setSdaLow(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 		switch (softI2C_write(si2cp, rawAddr)) {
 		case ack:
@@ -250,11 +250,11 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 		// Force SDA low
 			softI2C_setSdaLow(si2cp);
 		}
-		chThdSleepMicroseconds(softI2C_delay_us);
+		gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 		// Release SCL
 		softI2C_setSclHigh(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 		data <<= 1;
 
@@ -270,7 +270,7 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 
 	// Release SDA
 	softI2C_setSdaHigh(si2cp);
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
@@ -285,7 +285,7 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 
 	result_t res = (softI2C_readSda(si2cp) == 0 ? ack : nack);
 
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Keep SCL low between bytes
 	softI2C_setSclLow(si2cp);
@@ -306,11 +306,11 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck) 
 
 		// Release SDA (from previous ACK)
 		softI2C_setSdaHigh(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 		// Release SCL
 		softI2C_setSclHigh(si2cp);
-		chThdSleepMicroseconds(softI2C_delay_us);
+		gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 		// Read clock stretch
 		while (softI2C_readScl(si2cp) == 0)
@@ -335,7 +335,7 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck) 
 		softI2C_setSdaHigh(si2cp);
 	}
 
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 	
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
@@ -348,7 +348,7 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck) 
 		}
 	}
 
-	chThdSleepMicroseconds(softI2C_delay_us);
+	gptPolledDelay(&GPTD4, softI2C_delay_us);
 
 	// Keep SCL low between bytes
 	softI2C_setSclLow(si2cp);

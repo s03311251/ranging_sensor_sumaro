@@ -14,10 +14,10 @@
 // Defines /////////////////////////////////////////////////////////////////////
 
 // Record the current time to check an upcoming timeout against
-#define startTimeout() (timeout_start = chVTGetSystemTime())
+#define VL53L0X_startTimeout() (VL53L0X_timeout_start = chVTGetSystemTime())
 
 // Check if timeout is enabled (set to nonzero value) and has expired
-#define checkTimeoutExpired() (io_timeout > 0 && chVTTimeElapsedSinceX(timeout_start) > MS2ST(io_timeout))
+#define VL53L0X_checkTimeoutExpired() (VL53L0X_io_timeout > 0 && chVTTimeElapsedSinceX(VL53L0X_timeout_start) > MS2ST(VL53L0X_io_timeout))
 /*
 // Decode VCSEL (vertical cavity surface emitting laser) pulse period in PCLKs
 // from register value
@@ -59,34 +59,34 @@ void VL53L0X::setAddress(uint8_t new_addr)
 // If io_2v8 (optional) is true or not given, the sensor is configured for 2V8
  // mode.*/
 
-bool VL53L03XInit() {
+_Bool VL53L0X_init() {
 	// "Set I2C standard mode"
-	VL53L03XWriteReg(0x88, 0x00);
+	VL53L0X_writeReg(0x88, 0x00);
 
-	VL53L03XWriteReg(0x80, 0x01);
-	VL53L03XWriteReg(0xFF, 0x01);
-	VL53L03XWriteReg(0x00, 0x00);
-	stop_variable = VL53L03XReadReg(0x91);
-	VL53L03XWriteReg(0x00, 0x01);
-	VL53L03XWriteReg(0xFF, 0x00);
-	VL53L03XWriteReg(0x80, 0x00);
+	VL53L0X_writeReg(0x80, 0x01);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x00, 0x00);
+	VL53L0X_stop_variable = VL53L0X_readReg(0x91);
+	VL53L0X_writeReg(0x00, 0x01);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x80, 0x00);
 
 	// disable SIGNAL_RATE_MSRC (bit 1) and SIGNAL_RATE_PRE_RANGE (bit 4) limit checks
-	VL53L03XWriteReg(MSRC_CONFIG_CONTROL,
-			VL53L03XReadReg(MSRC_CONFIG_CONTROL) | 0x12);
+	VL53L0X_writeReg(MSRC_CONFIG_CONTROL,
+			VL53L0X_readReg(MSRC_CONFIG_CONTROL) | 0x12);
 
 	// set final range signal rate limit to 0.25 MCPS (million counts per second)
-	VL53L0XSetSignalRateLimit(0.25);
+	VL53L0X_setSignalRateLimit(0.25);
 
-	VL53L03XWriteReg(SYSTEM_SEQUENCE_CONFIG, 0xFF);
+	VL53L0X_writeReg(SYSTEM_SEQUENCE_CONFIG, 0xFF);
 
 	// VL53L0X_DataInit() end
 
 	// VL53L0X_StaticInit() begin
 
 	uint8_t spad_count;
-	bool spad_type_is_aperture;
-	if (!getSpadInfo(&spad_count, &spad_type_is_aperture)) {
+	_Bool spad_type_is_aperture;
+	if (!VL53L0X_getSpadInfo(&spad_count, &spad_type_is_aperture)) {
 		return false;
 	}
 
@@ -94,15 +94,15 @@ bool VL53L03XInit() {
 	// the API, but the same data seems to be more easily readable from
 	// GLOBAL_CONFIG_SPAD_ENABLES_REF_0 through _6, so read it from there
 	uint8_t ref_spad_map[6];
-	readMulti(GLOBAL_CONFIG_SPAD_ENABLES_REF_0, ref_spad_map, 6);
+	VL53L0X_readMulti(GLOBAL_CONFIG_SPAD_ENABLES_REF_0, ref_spad_map, 6);
 
 	// -- VL53L0X_set_reference_spads() begin (assume NVM values are valid)
 
-	writeReg(0xFF, 0x01);
-	writeReg(DYNAMIC_SPAD_REF_EN_START_OFFSET, 0x00);
-	writeReg(DYNAMIC_SPAD_NUM_REQUESTED_REF_SPAD, 0x2C);
-	writeReg(0xFF, 0x00);
-	writeReg(GLOBAL_CONFIG_REF_EN_START_SELECT, 0xB4);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(DYNAMIC_SPAD_REF_EN_START_OFFSET, 0x00);
+	VL53L0X_writeReg(DYNAMIC_SPAD_NUM_REQUESTED_REF_SPAD, 0x2C);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(GLOBAL_CONFIG_REF_EN_START_SELECT, 0xB4);
 
 	uint8_t first_spad_to_enable = spad_type_is_aperture ? 12 : 0; // 12 is the first aperture spad
 	uint8_t spads_enabled = 0;
@@ -117,119 +117,120 @@ bool VL53L03XInit() {
 		}
 	}
 
-	writeMulti(GLOBAL_CONFIG_SPAD_ENABLES_REF_0, ref_spad_map, 6);
+	VL53L0X_writeMulti(GLOBAL_CONFIG_SPAD_ENABLES_REF_0, ref_spad_map, 6);
 
 	// -- VL53L0X_set_reference_spads() end
 
 	// -- VL53L0X_load_tuning_settings() begin
 	// DefaultTuningSettings from vl53l0x_tuning.h
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x00, 0x00);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x00, 0x00);
 
-	writeReg(0xFF, 0x00);
-	writeReg(0x09, 0x00);
-	writeReg(0x10, 0x00);
-	writeReg(0x11, 0x00);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x09, 0x00);
+	VL53L0X_writeReg(0x10, 0x00);
+	VL53L0X_writeReg(0x11, 0x00);
 
-	writeReg(0x24, 0x01);
-	writeReg(0x25, 0xFF);
-	writeReg(0x75, 0x00);
+	VL53L0X_writeReg(0x24, 0x01);
+	VL53L0X_writeReg(0x25, 0xFF);
+	VL53L0X_writeReg(0x75, 0x00);
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x4E, 0x2C);
-	writeReg(0x48, 0x00);
-	writeReg(0x30, 0x20);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x4E, 0x2C);
+	VL53L0X_writeReg(0x48, 0x00);
+	VL53L0X_writeReg(0x30, 0x20);
 
-	writeReg(0xFF, 0x00);
-	writeReg(0x30, 0x09);
-	writeReg(0x54, 0x00);
-	writeReg(0x31, 0x04);
-	writeReg(0x32, 0x03);
-	writeReg(0x40, 0x83);
-	writeReg(0x46, 0x25);
-	writeReg(0x60, 0x00);
-	writeReg(0x27, 0x00);
-	writeReg(0x50, 0x06);
-	writeReg(0x51, 0x00);
-	writeReg(0x52, 0x96);
-	writeReg(0x56, 0x08);
-	writeReg(0x57, 0x30);
-	writeReg(0x61, 0x00);
-	writeReg(0x62, 0x00);
-	writeReg(0x64, 0x00);
-	writeReg(0x65, 0x00);
-	writeReg(0x66, 0xA0);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x30, 0x09);
+	VL53L0X_writeReg(0x54, 0x00);
+	VL53L0X_writeReg(0x31, 0x04);
+	VL53L0X_writeReg(0x32, 0x03);
+	VL53L0X_writeReg(0x40, 0x83);
+	VL53L0X_writeReg(0x46, 0x25);
+	VL53L0X_writeReg(0x60, 0x00);
+	VL53L0X_writeReg(0x27, 0x00);
+	VL53L0X_writeReg(0x50, 0x06);
+	VL53L0X_writeReg(0x51, 0x00);
+	VL53L0X_writeReg(0x52, 0x96);
+	VL53L0X_writeReg(0x56, 0x08);
+	VL53L0X_writeReg(0x57, 0x30);
+	VL53L0X_writeReg(0x61, 0x00);
+	VL53L0X_writeReg(0x62, 0x00);
+	VL53L0X_writeReg(0x64, 0x00);
+	VL53L0X_writeReg(0x65, 0x00);
+	VL53L0X_writeReg(0x66, 0xA0);
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x22, 0x32);
-	writeReg(0x47, 0x14);
-	writeReg(0x49, 0xFF);
-	writeReg(0x4A, 0x00);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x22, 0x32);
+	VL53L0X_writeReg(0x47, 0x14);
+	VL53L0X_writeReg(0x49, 0xFF);
+	VL53L0X_writeReg(0x4A, 0x00);
 
-	writeReg(0xFF, 0x00);
-	writeReg(0x7A, 0x0A);
-	writeReg(0x7B, 0x00);
-	writeReg(0x78, 0x21);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x7A, 0x0A);
+	VL53L0X_writeReg(0x7B, 0x00);
+	VL53L0X_writeReg(0x78, 0x21);
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x23, 0x34);
-	writeReg(0x42, 0x00);
-	writeReg(0x44, 0xFF);
-	writeReg(0x45, 0x26);
-	writeReg(0x46, 0x05);
-	writeReg(0x40, 0x40);
-	writeReg(0x0E, 0x06);
-	writeReg(0x20, 0x1A);
-	writeReg(0x43, 0x40);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x23, 0x34);
+	VL53L0X_writeReg(0x42, 0x00);
+	VL53L0X_writeReg(0x44, 0xFF);
+	VL53L0X_writeReg(0x45, 0x26);
+	VL53L0X_writeReg(0x46, 0x05);
+	VL53L0X_writeReg(0x40, 0x40);
+	VL53L0X_writeReg(0x0E, 0x06);
+	VL53L0X_writeReg(0x20, 0x1A);
+	VL53L0X_writeReg(0x43, 0x40);
 
-	writeReg(0xFF, 0x00);
-	writeReg(0x34, 0x03);
-	writeReg(0x35, 0x44);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x34, 0x03);
+	VL53L0X_writeReg(0x35, 0x44);
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x31, 0x04);
-	writeReg(0x4B, 0x09);
-	writeReg(0x4C, 0x05);
-	writeReg(0x4D, 0x04);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x31, 0x04);
+	VL53L0X_writeReg(0x4B, 0x09);
+	VL53L0X_writeReg(0x4C, 0x05);
+	VL53L0X_writeReg(0x4D, 0x04);
 
-	writeReg(0xFF, 0x00);
-	writeReg(0x44, 0x00);
-	writeReg(0x45, 0x20);
-	writeReg(0x47, 0x08);
-	writeReg(0x48, 0x28);
-	writeReg(0x67, 0x00);
-	writeReg(0x70, 0x04);
-	writeReg(0x71, 0x01);
-	writeReg(0x72, 0xFE);
-	writeReg(0x76, 0x00);
-	writeReg(0x77, 0x00);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x44, 0x00);
+	VL53L0X_writeReg(0x45, 0x20);
+	VL53L0X_writeReg(0x47, 0x08);
+	VL53L0X_writeReg(0x48, 0x28);
+	VL53L0X_writeReg(0x67, 0x00);
+	VL53L0X_writeReg(0x70, 0x04);
+	VL53L0X_writeReg(0x71, 0x01);
+	VL53L0X_writeReg(0x72, 0xFE);
+	VL53L0X_writeReg(0x76, 0x00);
+	VL53L0X_writeReg(0x77, 0x00);
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x0D, 0x01);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x0D, 0x01);
 
-	writeReg(0xFF, 0x00);
-	writeReg(0x80, 0x01);
-	writeReg(0x01, 0xF8);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x80, 0x01);
+	VL53L0X_writeReg(0x01, 0xF8);
 
-	writeReg(0xFF, 0x01);
-	writeReg(0x8E, 0x01);
-	writeReg(0x00, 0x01);
-	writeReg(0xFF, 0x00);
-	writeReg(0x80, 0x00);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x8E, 0x01);
+	VL53L0X_writeReg(0x00, 0x01);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x80, 0x00);
 
 	// -- VL53L0X_load_tuning_settings() end
 
 	// "Set interrupt config to new sample ready"
 	// -- VL53L0X_SetGpioConfig() begin
 
-	writeReg(SYSTEM_INTERRUPT_CONFIG_GPIO, 0x04);
-	writeReg(GPIO_HV_MUX_ACTIVE_HIGH, readReg(GPIO_HV_MUX_ACTIVE_HIGH) & ~0x10); // active low
-	writeReg(SYSTEM_INTERRUPT_CLEAR, 0x01);
+	VL53L0X_writeReg(SYSTEM_INTERRUPT_CONFIG_GPIO, 0x04);
+	VL53L0X_writeReg(GPIO_HV_MUX_ACTIVE_HIGH,
+			VL53L0X_readReg(GPIO_HV_MUX_ACTIVE_HIGH) & ~0x10); // active low
+	VL53L0X_writeReg(SYSTEM_INTERRUPT_CLEAR, 0x01);
 
 	// -- VL53L0X_SetGpioConfig() end
 
-	measurement_timing_budget_us = getMeasurementTimingBudget();
+	VL53L0X_measurement_timing_budget_us = VL53L0X_getMeasurementTimingBudget();
 
 	// "Disable MSRC and TCC by default"
 	// MSRC = Minimum Signal Rate Check
@@ -241,7 +242,7 @@ bool VL53L03XInit() {
 	// -- VL53L0X_SetSequenceStepEnable() end
 
 	// "Recalculate timing budget"
-	setMeasurementTimingBudget(measurement_timing_budget_us);
+	setMeasurementTimingBudget(VL53L0X_measurement_timing_budget_us);
 
 	// VL53L0X_StaticInit() end
 
@@ -272,7 +273,7 @@ bool VL53L03XInit() {
 }
 
 // Write an 8-bit register
-void VL53L03XWriteReg(uint8_t reg, uint8_t value) {
+void VL53L0X_writeReg(uint8_t reg, uint8_t value) {
 	uint8_t txbuf[2];
 	txbuf[0] = reg;
 	txbuf[1] = value;
@@ -280,7 +281,7 @@ void VL53L03XWriteReg(uint8_t reg, uint8_t value) {
 }
 
 // Write a 16-bit register
-void VL53L03XWriteReg16Bit(uint8_t reg, uint16_t value) {
+void VL53L0X_writeReg16Bit(uint8_t reg, uint16_t value) {
 	uint8_t txbuf[3];
 	txbuf[0] = reg;
 	txbuf[1] = (value >> 8) & 0xFF;
@@ -302,7 +303,7 @@ void VL53L0X::writeReg32Bit(uint8_t reg, uint32_t value)
 }
  */
 // Read an 8-bit register
-uint8_t VL53L03XReadReg(uint8_t reg) {
+uint8_t VL53L0X_readReg(uint8_t reg) {
 	uint8_t rxbuf;
 	i2cMasterReceiveTimeout(&I2CD1, address, &rxbuf, 1, TIME_INFINITE);
 	return rxbuf;
@@ -356,23 +357,15 @@ void VL53L0X::writeMulti(uint8_t reg, uint8_t const * src, uint8_t count)
 
   last_status = Wire.endTransmission();
 }
-
+ */
 // Read an arbitrary number of bytes from the sensor, starting at the given
 // register, into the given array
-void VL53L0X::readMulti(uint8_t reg, uint8_t * dst, uint8_t count)
+void VL53L0X_readMulti(uint8_t reg, uint8_t * dst, uint8_t count)
 {
-  Wire.beginTransmission(address);
-  Wire.write(reg);
-  last_status = Wire.endTransmission();
-
-  Wire.requestFrom(address, count);
-
-  while (count-- > 0)
-  {
-    *(dst++) = Wire.read();
-  }
+	i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address, &reg, 1, dst, count,
+			TIME_INFINITE);
 }
- */
+
 // Set the return signal rate limit check value in units of MCPS (mega counts
 // per second). "This represents the amplitude of the signal reflected from the
 // target and detected by the device"; setting this limit presumably determines
@@ -381,13 +374,13 @@ void VL53L0X::readMulti(uint8_t reg, uint8_t * dst, uint8_t count)
 // seems to increase the likelihood of getting an inaccurate reading because of
 // unwanted reflections from objects other than the intended target.
 // Defaults to 0.25 MCPS as initialized by the ST API and this library.
-bool VL53L0XSetSignalRateLimit(float limit_Mcps) {
+bool VL53L0X_setSignalRateLimit(float limit_Mcps) {
 	if (limit_Mcps < 0 || limit_Mcps > 511.99) {
 		return false;
 	}
 
 	// Q9.7 fixed point format (9 integer bits, 7 fractional bits)
-	VL53L03XWriteReg16Bit(FINAL_RANGE_CONFIG_MIN_COUNT_RATE_RTN_LIMIT,
+	VL53L0X_writeReg16Bit(FINAL_RANGE_CONFIG_MIN_COUNT_RATE_RTN_LIMIT,
 			limit_Mcps * (1 << 7));
 	return true;
 }
@@ -486,15 +479,15 @@ bool VL53L0X::setMeasurementTimingBudget(uint32_t budget_us)
 
     // set_sequence_step_timeout() end
 
-    measurement_timing_budget_us = budget_us; // store for internal reuse
+ VL53L0X_measurement_timing_budget_us = budget_us; // store for internal reuse
   }
   return true;
 }
-
+ */
 // Get the measurement timing budget in microseconds
 // based on VL53L0X_get_measurement_timing_budget_micro_seconds()
 // in us
-uint32_t VL53L0X::getMeasurementTimingBudget(void)
+uint32_t VL53L0X_getMeasurementTimingBudget(void)
 {
   SequenceStepEnables enables;
   SequenceStepTimeouts timeouts;
@@ -537,10 +530,10 @@ uint32_t VL53L0X::getMeasurementTimingBudget(void)
     budget_us += (timeouts.final_range_us + FinalRangeOverhead);
   }
 
-  measurement_timing_budget_us = budget_us; // store for internal reuse
+ VL53L0X_measurement_timing_budget_us = budget_us; // store for internal reuse
   return budget_us;
 }
-
+/*
 // Set the VCSEL (vertical cavity surface emitting laser) pulse period for the
 // given period type (pre-range or final range) to the given value in PCLKs.
 // Longer periods seem to increase the potential range of the sensor.
@@ -708,7 +701,7 @@ SequenceStepEnables enables;
 
   // "Finally, the timing budget must be re-applied"
 
-  setMeasurementTimingBudget(measurement_timing_budget_us);
+ setMeasurementTimingBudget(VL53L0X_measurement_timing_budget_us);
 
   // "Perform the phase calibration. This is needed after changing on vcsel period."
   // VL53L0X_perform_phase_calibration() begin
@@ -798,10 +791,10 @@ void VL53L0X::stopContinuous(void)
 // single-shot range measurement)
 uint16_t VL53L0X::readRangeContinuousMillimeters(void)
 {
-  startTimeout();
+ VL53L0X_startTimeout();
   while ((readReg(RESULT_INTERRUPT_STATUS) & 0x07) == 0)
   {
-    if (checkTimeoutExpired())
+ if (VL53L0X_checkTimeoutExpired())
     {
       did_timeout = true;
       return 65535;
@@ -833,10 +826,10 @@ uint16_t VL53L0X::readRangeSingleMillimeters(void)
   writeReg(SYSRANGE_START, 0x01);
 
   // "Wait until start bit has been cleared"
-  startTimeout();
+ VL53L0X_startTimeout();
   while (readReg(SYSRANGE_START) & 0x01)
   {
-    if (checkTimeoutExpired())
+ if (VL53L0X_checkTimeoutExpired())
     {
       did_timeout = true;
       return 65535;
@@ -865,42 +858,42 @@ bool VL53L0X::timeoutOccurred()
 // Get reference SPAD (single photon avalanche diode) count and type
 // based on VL53L0X_get_info_from_device(),
 // but only gets reference SPAD count and type
-bool VL53L0XGetSpadInfo(uint8_t * count, bool * type_is_aperture) {
+_Bool VL53L0X_getSpadInfo(uint8_t * count, _Bool * type_is_aperture) {
 	uint8_t tmp;
 
-	VL53L03XWriteReg(0x80, 0x01);
-	VL53L03XWriteReg(0xFF, 0x01);
-	VL53L03XWriteReg(0x00, 0x00);
+	VL53L0X_writeReg(0x80, 0x01);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x00, 0x00);
 
-	VL53L03XWriteReg(0xFF, 0x06);
-	VL53L03XWriteReg(0x83, VL53L03XReadReg(0x83) | 0x04);
-	VL53L03XWriteReg(0xFF, 0x07);
-	VL53L03XWriteReg(0x81, 0x01);
+	VL53L0X_writeReg(0xFF, 0x06);
+	VL53L0X_writeReg(0x83, VL53L0X_readReg(0x83) | 0x04);
+	VL53L0X_writeReg(0xFF, 0x07);
+	VL53L0X_writeReg(0x81, 0x01);
 
-	VL53L03XWriteReg(0x80, 0x01);
+	VL53L0X_writeReg(0x80, 0x01);
 
-	VL53L03XWriteReg(0x94, 0x6b);
-	VL53L03XWriteReg(0x83, 0x00);
-	startTimeout();
-	while (readReg(0x83) == 0x00) {
-		if (checkTimeoutExpired()) {
+	VL53L0X_writeReg(0x94, 0x6b);
+	VL53L0X_writeReg(0x83, 0x00);
+	VL53L0X_startTimeout();
+	while (VL53L0X_readReg(0x83) == 0x00) {
+		if (VL53L0X_checkTimeoutExpired()) {
 			return false;
 		}
 	}
-	VL53L03XWriteReg(0x83, 0x01);
-	tmp = VL53L03XReadReg(0x92);
+	VL53L0X_writeReg(0x83, 0x01);
+	tmp = VL53L0X_readReg(0x92);
 
 	*count = tmp & 0x7f;
 	*type_is_aperture = (tmp >> 7) & 0x01;
 
-	VL53L03XWriteReg(0x81, 0x00);
-	VL53L03XWriteReg(0xFF, 0x06);
-	VL53L03XWriteReg(0x83, VL53L03XReadReg(0x83) & ~0x04);
-	VL53L03XWriteReg(0xFF, 0x01);
-	VL53L03XWriteReg(0x00, 0x01);
+	VL53L0X_writeReg(0x81, 0x00);
+	VL53L0X_writeReg(0xFF, 0x06);
+	VL53L0X_writeReg(0x83, VL53L0XReadReg(0x83) & ~0x04);
+	VL53L0X_writeReg(0xFF, 0x01);
+	VL53L0X_writeReg(0x00, 0x01);
 
-	VL53L03XWriteReg(0xFF, 0x00);
-	VL53L03XWriteReg(0x80, 0x00);
+	VL53L0X_writeReg(0xFF, 0x00);
+	VL53L0X_writeReg(0x80, 0x00);
 
 	return true;
 }
@@ -1012,10 +1005,10 @@ bool VL53L0X::performSingleRefCalibration(uint8_t vhv_init_byte)
 {
 writeReg(SYSRANGE_START, 0x01 | vhv_init_byte); // VL53L0X_REG_SYSRANGE_MODE_START_STOP
 
-startTimeout();
+ VL53L0X_startTimeout();
 while ((readReg(RESULT_INTERRUPT_STATUS) & 0x07) == 0)
 {
-	if (checkTimeoutExpired()) {return false;}
+ if (VL53L0X_checkTimeoutExpired()) {return false;}
 }
 
 writeReg(SYSTEM_INTERRUPT_CLEAR, 0x01);

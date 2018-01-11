@@ -114,6 +114,8 @@ CSRC = $(STARTUPSRC) \
        $(BOARDSRC) \
        $(TESTSRC) \
        softI2C.c \
+       pl_softI2C.c \
+       VL53L0X.c \
        main.c
 #       VL53L0X.c \
 

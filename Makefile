@@ -116,6 +116,8 @@ CSRC = $(STARTUPSRC) \
        softI2C.c \
        pl_softI2C.c \
        VL53L0X.c \
+       $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
+       $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
        main.c
 #       VL53L0X.c \
 
@@ -150,6 +152,7 @@ ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
+         $(CHIBIOS)/os/hal/lib/streams \
          $(CHIBIOS)/os/various
 
 #

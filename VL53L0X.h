@@ -9,6 +9,7 @@
 #define VL53L0X_H_
 
 #include "ch.h"
+#include "hal.h"
 
 // The Arduino two-wire interface uses a 7-bit number for the address,
 // and sets the last bit correctly based on reads and writes
@@ -96,88 +97,77 @@
 #define ALGO_PHASECAL_LIM                           0x30
 #define ALGO_PHASECAL_CONFIG_TIMEOUT                0x30
 
-//enum vcselPeriodType { VcselPeriodPreRange, VcselPeriodFinalRange };
-
-msg_t VL53L0X_last_status; // status of last I2C transmission
+typedef enum VL53L0X_vcselPeriodType {
+	VcselPeriodPreRange, VcselPeriodFinalRange
+} VL53L0X_vcselPeriodType;
 
 /*
  void setAddress(uint8_t new_addr);
  inline uint8_t getAddress(void) { return address; }
-
- bool init(bool io_2v8 = true);
-
- void writeReg(uint8_t reg, uint8_t value);
- void writeReg16Bit(uint8_t reg, uint16_t value);
- void writeReg32Bit(uint8_t reg, uint32_t value);
- uint8_t readReg(uint8_t reg);
- uint16_t readReg16Bit(uint8_t reg);
- uint32_t readReg32Bit(uint8_t reg);
-
- void writeMulti(uint8_t reg, uint8_t const * src, uint8_t count);
- void readMulti(uint8_t reg, uint8_t * dst, uint8_t count);
-
- bool setSignalRateLimit(float limit_Mcps);
- float getSignalRateLimit(void);
-
- bool setMeasurementTimingBudget(uint32_t budget_us);
- uint32_t getMeasurementTimingBudget(void);
-
- bool setVcselPulsePeriod(vcselPeriodType type, uint8_t period_pclks);
- uint8_t getVcselPulsePeriod(vcselPeriodType type);
-
- void startContinuous(uint32_t period_ms = 0);
- void stopContinuous(void);
- uint16_t readRangeContinuousMillimeters(void);
- uint16_t readRangeSingleMillimeters(void);
  */
-inline void VL53L0X_setTimeout(uint16_t timeout) {
-	VL53L0X_io_timeout = timeout;
-}
-/*
- inline uint16_t getTimeout(void) { return io_timeout; }
- bool timeoutOccurred(void);
+_Bool VL53L0X_init(void);
+//_Bool VL53L0X_init(_Bool io_2v8);
+uint8_t VL53L0X_readReg(uint8_t reg);
 
+void VL53L0X_writeReg(uint8_t reg, uint8_t value);
+void VL53L0X_writeReg16Bit(uint8_t reg, uint16_t value);
+void VL53L0X_writeReg32Bit(uint8_t reg, uint32_t value);
+uint8_t VL53L0X_readReg(uint8_t reg);
+uint16_t VL53L0X_readReg16Bit(uint8_t reg);
+// uint32_t readReg32Bit(uint8_t reg);
+
+void VL53L0X_writeMulti(uint8_t reg, uint8_t const * src, uint8_t count);
+void VL53L0X_readMulti(uint8_t reg, uint8_t * dst, uint8_t count);
+
+bool VL53L0X_setSignalRateLimit(float limit_Mcps);
+// float getSignalRateLimit(void);
+
+_Bool VL53L0X_setMeasurementTimingBudget(uint32_t budget_us);
+uint32_t VL53L0X_getMeasurementTimingBudget(void);
+
+// bool setVcselPulsePeriod(vcselPeriodType type, uint8_t period_pclks);
+uint8_t VL53L0X_getVcselPulsePeriod(VL53L0X_vcselPeriodType type);
+
+void VL53L0X_startContinuous(void);
+//void VL53L0X_startContinuous(uint32_t period_ms);
+// void stopContinuous(void);
+uint16_t VL53L0X_readRangeContinuousMillimeters(void);
+// uint16_t readRangeSingleMillimeters(void);
+
+void VL53L0X_setTimeout(uint16_t timeout);
+//uint16_t VL53L0X_getTimeout(void);
+_Bool VL53L0X_timeoutOccurred(void);
+/*
 
  // TCC: Target CentreCheck
  // MSRC: Minimum Signal Rate Check
  // DSS: Dynamic Spad Selection
  */
- struct SequenceStepEnables
- {
+typedef struct VL53L0X_SequenceStepEnables {
 	_Bool tcc, msrc, dss, pre_range, final_range;
- };
+} VL53L0X_SequenceStepEnables;
 
- struct SequenceStepTimeouts
- {
+typedef struct VL53L0X_SequenceStepTimeouts {
  uint16_t pre_range_vcsel_period_pclks, final_range_vcsel_period_pclks;
 
  uint16_t msrc_dss_tcc_mclks, pre_range_mclks, final_range_mclks;
  uint32_t msrc_dss_tcc_us,    pre_range_us,    final_range_us;
- };
- */
-/*
-uint8_t VL53L0X_address = ADDRESS_DEFAULT;
-uint32_t VL53L0X_io_timeout = 0;
-//bool did_timeout;
-systime_t VL53L0X_timeout_start;
+} VL53L0X_SequenceStepTimeouts;
 
-uint8_t VL53L0X_stop_variable; // read by init and used when starting measurement; is StopVariable field of VL53L0X_DevData_t structure in API
-uint32_t VL53L0X_measurement_timing_budget_us;
-/*
-bool getSpadInfo(uint8_t * count, bool * type_is_aperture);
+_Bool VL53L0X_getSpadInfo(uint8_t * count, _Bool * type_is_aperture);
 
-void getSequenceStepEnables(SequenceStepEnables * enables);
-void getSequenceStepTimeouts(SequenceStepEnables const * enables,
-		SequenceStepTimeouts * timeouts);
+void VL53L0X_getSequenceStepEnables(VL53L0X_SequenceStepEnables * enables);
+void VL53L0X_getSequenceStepTimeouts(
+		VL53L0X_SequenceStepEnables const * enables,
+		VL53L0X_SequenceStepTimeouts * timeouts);
 
-bool performSingleRefCalibration(uint8_t vhv_init_byte);
+_Bool VL53L0X_performSingleRefCalibration(uint8_t vhv_init_byte);
 
-static uint16_t decodeTimeout(uint16_t value);
-static uint16_t encodeTimeout(uint16_t timeout_mclks);
-static uint32_t timeoutMclksToMicroseconds(uint16_t timeout_period_mclks,
+uint16_t VL53L0X_decodeTimeout(uint16_t reg_val);
+uint16_t VL53L0X_encodeTimeout(uint16_t timeout_mclks);
+uint32_t VL53L0X_timeoutMclksToMicroseconds(uint16_t timeout_period_mclks,
 		uint8_t vcsel_period_pclks);
-static uint32_t timeoutMicrosecondsToMclks(uint32_t timeout_period_us,
+uint32_t VL53L0X_timeoutMicrosecondsToMclks(uint32_t timeout_period_us,
 		uint8_t vcsel_period_pclks);
-};
- */
+
 #endif /* VL53L0X_H_ */

@@ -8,6 +8,8 @@
 #ifndef VL53L0X_H_
 #define VL53L0X_H_
 
+#include "ch.h"
+
 // The Arduino two-wire interface uses a 7-bit number for the address,
 // and sets the last bit correctly based on reads and writes
 #define ADDRESS_DEFAULT 0b0101001
@@ -96,7 +98,7 @@
 
 //enum vcselPeriodType { VcselPeriodPreRange, VcselPeriodFinalRange };
 
-//uint8_t last_status; // status of last I2C transmission
+msg_t VL53L0X_last_status; // status of last I2C transmission
 
 /*
  void setAddress(uint8_t new_addr);
@@ -127,8 +129,11 @@
  void stopContinuous(void);
  uint16_t readRangeContinuousMillimeters(void);
  uint16_t readRangeSingleMillimeters(void);
-
- inline void setTimeout(uint16_t timeout) { io_timeout = timeout; }
+ */
+inline void VL53L0X_setTimeout(uint16_t timeout) {
+	VL53L0X_io_timeout = timeout;
+}
+/*
  inline uint16_t getTimeout(void) { return io_timeout; }
  bool timeoutOccurred(void);
 
@@ -136,10 +141,10 @@
  // TCC: Target CentreCheck
  // MSRC: Minimum Signal Rate Check
  // DSS: Dynamic Spad Selection
-
+ */
  struct SequenceStepEnables
  {
- boolean tcc, msrc, dss, pre_range, final_range;
+	_Bool tcc, msrc, dss, pre_range, final_range;
  };
 
  struct SequenceStepTimeouts
@@ -150,14 +155,14 @@
  uint32_t msrc_dss_tcc_us,    pre_range_us,    final_range_us;
  };
  */
-
-uint8_t address = ADDRESS_DEFAULT;
-uint32_t io_timeout = 0;
+/*
+uint8_t VL53L0X_address = ADDRESS_DEFAULT;
+uint32_t VL53L0X_io_timeout = 0;
 //bool did_timeout;
-systime_t timeout_start;
+systime_t VL53L0X_timeout_start;
 
-uint8_t stop_variable; // read by init and used when starting measurement; is StopVariable field of VL53L0X_DevData_t structure in API
-//uint32_t measurement_timing_budget_us;
+uint8_t VL53L0X_stop_variable; // read by init and used when starting measurement; is StopVariable field of VL53L0X_DevData_t structure in API
+uint32_t VL53L0X_measurement_timing_budget_us;
 /*
 bool getSpadInfo(uint8_t * count, bool * type_is_aperture);
 

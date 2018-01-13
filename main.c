@@ -117,8 +117,8 @@ int main(void) {
 	palSetLineMode(LINE_ARD_D14,
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 
-	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(GPIOB, 4, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(SI2CD1.sdaPort, SI2CD1.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(SI2CD1.sclPort, SI2CD1.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
 	palSetPadMode(SI2CD2.sdaPort, SI2CD2.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
 	palSetPadMode(SI2CD2.sclPort, SI2CD2.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(SI2CD3.sdaPort, SI2CD3.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
@@ -154,9 +154,9 @@ int main(void) {
 //	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 
-//	VL53L0X_init();
-//	VL53L0X_setTimeout(500);
-//	VL53L0X_startContinuous();
+	VL53L0X_init();
+	VL53L0X_setTimeout(500);
+	VL53L0X_startContinuous();
 
 	while (true) {
 		chprintf(chp, "\rabc:%4d", VL53L0X_readRangeContinuousMillimeters());

@@ -299,7 +299,7 @@ void VL53L0X_writeReg(uint8_t reg, uint8_t value) {
 	uint8_t txbuf[2];
 	txbuf[0] = reg;
 	txbuf[1] = value;
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			txbuf, 2, NULL, 0, TIME_INFINITE);
 }
 
@@ -309,7 +309,7 @@ void VL53L0X_writeReg16Bit(uint8_t reg, uint16_t value) {
 	txbuf[0] = reg;
 	txbuf[1] = (value >> 8) & 0xFF;
 	txbuf[2] = value & 0xFF;
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			txbuf, 3, NULL, 0, TIME_INFINITE);
 }
 
@@ -321,14 +321,14 @@ void VL53L0X_writeReg32Bit(uint8_t reg, uint32_t value) {
 	txbuf[2] = (value >> 16) & 0xFF;
 	txbuf[3] = (value >> 8) & 0xFF;
 	txbuf[4] = value & 0xFF;
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			txbuf, 3, NULL, 0, TIME_INFINITE);
 }
 
 // Read an 8-bit register
 uint8_t VL53L0X_readReg(uint8_t reg) {
 	uint8_t rxbuf;
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			&reg, 1, &rxbuf, 1, TIME_INFINITE);
 	return rxbuf;
 }
@@ -336,7 +336,7 @@ uint8_t VL53L0X_readReg(uint8_t reg) {
 // Read a 16-bit register
 uint16_t VL53L0X_readReg16Bit(uint8_t reg) {
 	uint8_t rxbuf[2];
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			&reg, 1, rxbuf, 2, TIME_INFINITE);
 
 	uint16_t value;
@@ -373,7 +373,7 @@ void VL53L0X_writeMulti(uint8_t reg, uint8_t const * src, uint8_t count) {
 		txbuf[i + 1] = src[i];
 	}
 
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			txbuf, count + 1, NULL, 0,
 			TIME_INFINITE);
 
@@ -383,7 +383,7 @@ void VL53L0X_writeMulti(uint8_t reg, uint8_t const * src, uint8_t count) {
 // register, into the given array
 void VL53L0X_readMulti(uint8_t reg, uint8_t * dst, uint8_t count)
 {
-	VL53L0X_last_status = i2cMasterTransmitTimeout(&I2CD1, VL53L0X_address,
+	VL53L0X_last_status = softi2cMasterTransmitTimeout(&SI2CD1, VL53L0X_address,
 			&reg, 1, dst, count,
 			TIME_INFINITE);
 }

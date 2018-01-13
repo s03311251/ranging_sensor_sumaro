@@ -30,7 +30,7 @@ typedef enum result_t {
 	ack = 0, nack = 1, timedOut = 2,
 } result_t;
 
-//extern softI2CDriver SI2CD1;
+extern softI2CDriver SI2CD1;
 
 msg_t softi2cMasterTransmitTimeout(softI2CDriver *i2cp,
 		i2caddr_t addr, // 7-bit address

@@ -45,12 +45,11 @@ _Bool test = false;
 //	chSysUnlockFromISR();
 //}
 
-softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
 
 
 static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE, };
-//static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
+static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
 
 /*
  * Green LED blinker thread, times are in milliseconds.
@@ -85,7 +84,7 @@ int main(void) {
 
 	sdStart(&SD2, NULL);
 	i2cStart(&I2CD1, &i2ccfg);
-//	gptStart(&GPTD4, &gpt4cfg);
+	gptStart(&GPTD4, &gpt4cfg);
 
 	softI2CDriver SI2CD2 = { GPIOB, 10, GPIOA, 8 };
 //	softI2CDriver SI2CD3 = { GPIOA, 9, GPIOC, 7 };
@@ -160,11 +159,10 @@ int main(void) {
 //	VL53L0X_startContinuous();
 
 	while (true) {
-//		chprintf(chp, "\rabc:%4d",
-//				VL53L0X_readRangeContinuousMillimeters());
-//		if (VL53L0X_timeoutOccurred()) {
-//			chprintf(chp, "TIMEOUT");
-//		}
+		chprintf(chp, "\rabc:%4d", VL53L0X_readRangeContinuousMillimeters());
+		if (VL53L0X_timeoutOccurred()) {
+			chprintf(chp, "TIMEOUT");
+		}
 
 
 
@@ -196,12 +194,12 @@ int main(void) {
 
 
 
-		uint8_t txbuf[2] = { 'a', 'A' };
-		uint8_t rxbuf[2] = { 'z', 'Z' };
-		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
-		TIME_INFINITE);
-		for (int i = 0; i < 2; i++)
-			sdPut(&SD2, rxbuf[i]);
+//		uint8_t txbuf[2] = { 'a', 'A' };
+//		uint8_t rxbuf[2] = { 'z', 'Z' };
+//		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
+//		TIME_INFINITE);
+//		for (int i = 0; i < 2; i++)
+//			sdPut(&SD2, rxbuf[i]);
 
 //	i2cMasterTransmitTimeout(&I2CD1, 0x10, txbuf, 2, rxbuf, 2,
 //		TIME_INFINITE);

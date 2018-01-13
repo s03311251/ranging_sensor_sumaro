@@ -10,6 +10,7 @@
 uint8_t softI2C_delay_us = defaultDelay_us;
 uint32_t softI2C_timeout = defaultTimeout;
 
+softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
 /*
  * @retval MSG_OK       ack

@@ -15,6 +15,9 @@
 typedef uint16_t i2caddr_t;
 typedef uint32_t systime_t;
 
+#define defaultDelay_us 1
+#define defaultTimeout MS2ST(100)
+
 typedef struct softI2CDriver {
 	//const softI2CConfig *config;
 	ioportid_t sdaPort;
@@ -27,15 +30,14 @@ typedef enum result_t {
 	ack = 0, nack = 1, timedOut = 2,
 } result_t;
 
-#define defaultDelay_us 1
-#define defaultTimeout MS2ST(100)
+//extern softI2CDriver SI2CD1;
 
-void softi2cMasterTransmitTimeout(softI2CDriver *i2cp,
+msg_t softi2cMasterTransmitTimeout(softI2CDriver *i2cp,
 		i2caddr_t addr, // 7-bit address
 		const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes,
 		systime_t timeout);
 
-void softi2cMasterReceiveTimeout(softI2CDriver *i2cp, i2caddr_t addr, // 7-bit address
+msg_t softi2cMasterReceiveTimeout(softI2CDriver *i2cp, i2caddr_t addr, // 7-bit address
 		uint8_t *rxbuf, size_t rxbytes, systime_t timeout);
 
 void softI2C_setSdaLow(const softI2CDriver *si2cp);

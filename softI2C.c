@@ -10,66 +10,92 @@
 uint8_t softI2C_delay_us = defaultDelay_us;
 uint32_t softI2C_timeout = defaultTimeout;
 
-//void I2Cstart(I2CDriver *i2cp, const I2CConfig *config) {
-/*void softI2Cstart(softI2CDriver *si2cp) {
-	palSetPadMode(si2cp->sdaPort, si2cp->sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(si2cp->sclPort, si2cp->sckPad, PAL_MODE_OUTPUT_OPENDRAIN);
 
-}
+/*
+ * @retval MSG_OK       ack
+ * @retval MSG_RESET    nack
+ * @retval MSG_TIMEOUT  timeOut
  */
-
-void softi2cMasterTransmitTimeout(softI2CDriver *si2cp,
+msg_t softi2cMasterTransmitTimeout(softI2CDriver *si2cp,
 		i2caddr_t addr, // 7-bit address
 		const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes,
 		systime_t timeout) {
 	softI2C_timeout = timeout;
 
-	if (softI2C_llStartWait(si2cp, addr << 1) != ack) {
-		return;
+	result_t current_msg = softI2C_llStartWait(si2cp, addr << 1);
+	if (current_msg == nack) {
+		return MSG_RESET ;
+	} else if (current_msg == timedOut) {
+		return MSG_TIMEOUT ;
 	}
 
 	for (size_t i = 0; i < txbytes; i++) {
-		if (softI2C_write(si2cp, txbuf[i]) != ack) {
-			return;
+		current_msg = softI2C_write(si2cp, txbuf[i]);
+		if (current_msg == nack) {
+			return MSG_RESET ;
+		} else if (current_msg == timedOut) {
+			return MSG_TIMEOUT ;
 		}
 	}
 
 	if (rxbytes > 0) {
-		if (softI2C_llRepeatedStart(si2cp, (addr << 1) + 1) != ack) {
-			return;
+		current_msg = softI2C_llRepeatedStart(si2cp, (addr << 1) + 1);
+		if (current_msg == nack) {
+			return MSG_RESET ;
+		} else if (current_msg == timedOut) {
+			return MSG_TIMEOUT ;
 		}
 
 		for (size_t i = 0; i < rxbytes - 1; i++) {
-			if (softI2C_read(si2cp, &rxbuf[i], true) != ack) {
-				return;
+			current_msg = softI2C_read(si2cp, &rxbuf[i], true);
+			if (current_msg == nack) {
+				return MSG_RESET ;
+			} else if (current_msg == timedOut) {
+				return MSG_TIMEOUT ;
 			}
 		}
 
-		if (softI2C_read(si2cp, &rxbuf[rxbytes - 1], false) != ack) {
-			return;
+		softI2C_read(si2cp, &rxbuf[rxbytes - 1], false);
+		if (current_msg == nack) {
+			return MSG_RESET ;
+		} else if (current_msg == timedOut) {
+			return MSG_TIMEOUT ;
 		}
 	}
+
 	softI2C_stop(si2cp);
+	return MSG_OK ;
 }
 
-void softi2cMasterReceiveTimeout(softI2CDriver *si2cp, i2caddr_t addr, // 7-bit address
+msg_t softi2cMasterReceiveTimeout(softI2CDriver *si2cp, i2caddr_t addr, // 7-bit address
 		uint8_t *rxbuf, size_t rxbytes, systime_t timeout) {
 	softI2C_timeout = timeout;
 
-	if (softI2C_llStartWait(si2cp, (addr << 1) + 1) != ack) {
-		return;
+	result_t current_msg = softI2C_llStartWait(si2cp, (addr << 1) + 1);
+	if (current_msg == nack) {
+		return MSG_RESET ;
+	} else if (current_msg == timedOut) {
+		return MSG_TIMEOUT ;
 	}
 
 	for (size_t i = 0; i < rxbytes - 1; i++) {
-		if (softI2C_read(si2cp, &rxbuf[i], true) != ack) {
-			return;
+		current_msg = softI2C_read(si2cp, &rxbuf[i], true);
+		if (current_msg == nack) {
+			return MSG_RESET ;
+		} else if (current_msg == timedOut) {
+			return MSG_TIMEOUT ;
 		}
 	}
 
-	if (softI2C_read(si2cp, &rxbuf[rxbytes - 1], false) != ack) {
-		return;
+	current_msg = softI2C_read(si2cp, &rxbuf[rxbytes - 1], false);
+	if (current_msg == nack) {
+		return MSG_RESET ;
+	} else if (current_msg == timedOut) {
+		return MSG_TIMEOUT ;
 	}
+
 	softI2C_stop(si2cp);
+	return MSG_OK ;
 }
 
  // Force SDA low
@@ -336,7 +362,7 @@ result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck) 
 	}
 
 	gptPolledDelay(&GPTD4, softI2C_delay_us);
-	
+
 	// Release SCL
 	softI2C_setSclHigh(si2cp);
 

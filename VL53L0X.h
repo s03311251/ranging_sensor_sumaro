@@ -10,6 +10,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "softI2C.h"
 
 // The Arduino two-wire interface uses a 7-bit number for the address,
 // and sets the last bit correctly based on reads and writes

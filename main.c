@@ -45,6 +45,7 @@ _Bool test = false;
 //	chSysUnlockFromISR();
 //}
 
+softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 
 
 
@@ -86,7 +87,6 @@ int main(void) {
 	i2cStart(&I2CD1, &i2ccfg);
 //	gptStart(&GPTD4, &gpt4cfg);
 
-	softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
 	softI2CDriver SI2CD2 = { GPIOB, 10, GPIOA, 8 };
 //	softI2CDriver SI2CD3 = { GPIOA, 9, GPIOC, 7 };
 //	softI2CDriver SI2CD4 = { GPIOB, 6, GPIOA, 7 };
@@ -118,8 +118,8 @@ int main(void) {
 	palSetLineMode(LINE_ARD_D14,
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 
-	palSetPadMode(SI2CD1.sdaPort, SI2CD1.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(SI2CD1.sclPort, SI2CD1.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_OPENDRAIN);
+	palSetPadMode(GPIOB, 4, PAL_MODE_OUTPUT_OPENDRAIN);
 	palSetPadMode(SI2CD2.sdaPort, SI2CD2.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
 	palSetPadMode(SI2CD2.sclPort, SI2CD2.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(SI2CD3.sdaPort, SI2CD3.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
@@ -155,21 +155,17 @@ int main(void) {
 //	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 
-	VL53L0X_init();
-	VL53L0X_setTimeout(500);
-	VL53L0X_startContinuous();
+//	VL53L0X_init();
+//	VL53L0X_setTimeout(500);
+//	VL53L0X_startContinuous();
 
 	while (true) {
-		chprintf(chp, "\rabc:%3d",
-				VL53L0X_readRangeContinuousMillimeters());
-		if (VL53L0X_timeoutOccurred()) {
-			chprintf(chp, "TIMEOUT");
-		}
-
-
-//		if (!palReadPad(GPIOC, GPIOC_BUTTON)) {
-//			test_execute((BaseSequentialStream *) &SD2);
+//		chprintf(chp, "\rabc:%4d",
+//				VL53L0X_readRangeContinuousMillimeters());
+//		if (VL53L0X_timeoutOccurred()) {
+//			chprintf(chp, "TIMEOUT");
 //		}
+
 
 
 //		gptStartContinuous(&GPTD4, 1);
@@ -200,12 +196,12 @@ int main(void) {
 
 
 
-//		uint8_t txbuf[2] = { 'a', 'A' };
-//		uint8_t rxbuf[2] = { 'z', 'Z' };
-//		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
-//		TIME_INFINITE);
-//		for (int i = 0; i < 2; i++)
-//			sdPut(&SD2, rxbuf[i]);
+		uint8_t txbuf[2] = { 'a', 'A' };
+		uint8_t rxbuf[2] = { 'z', 'Z' };
+		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 2, rxbuf, 2,
+		TIME_INFINITE);
+		for (int i = 0; i < 2; i++)
+			sdPut(&SD2, rxbuf[i]);
 
 //	i2cMasterTransmitTimeout(&I2CD1, 0x10, txbuf, 2, rxbuf, 2,
 //		TIME_INFINITE);

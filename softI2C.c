@@ -11,6 +11,21 @@ uint8_t softI2C_delay_us = defaultDelay_us;
 uint32_t softI2C_timeout = defaultTimeout;
 
 softI2CDriver SI2CD1 = { GPIOB, 5, GPIOB, 4 };
+softI2CDriver SI2CD2 = { GPIOB, 10, GPIOA, 8 };
+//	softI2CDriver SI2CD3 = { GPIOA, 9, GPIOC, 7 };
+//	softI2CDriver SI2CD4 = { GPIOB, 6, GPIOA, 7 };
+//	softI2CDriver SI2CD5 = { GPIOB, 13, GPIOB, 14 };
+//	softI2CDriver SI2CD6 = { GPIOB, 15, GPIOB, 1 };
+//	softI2CDriver SI2CD7 = { GPIOB, 12, GPIOA, 11 };
+//	softI2CDriver SI2CD8 = { GPIOC, 5, GPIOC, 6 };
+//	softI2CDriver SI2CD9 = { GPIOC, 0, GPIOC, 1 };
+//	softI2CDriver SI2CD10 = { GPIOB, 0, GPIOA, 4 };
+//	softI2CDriver SI2CD11 = { GPIOA, 1, GPIOA, 0 };
+//	softI2CDriver SI2CD12 = { GPIOD, 2, GPIOC, 11 };
+//	softI2CDriver SI2CD13 = { GPIOC, 2, GPIOC, 3 };
+//	softI2CDriver SI2CD14 = { GPIOA, 15, GPIOC, 10 };
+//	softI2CDriver SI2CD15 = { GPIOC, 12, GPIOC, 4 };
+//	softI2CDriver SI2CD16 = { GPIOB, 2, GPIOA, 12 };
 
 /*
  * @retval MSG_OK       ack

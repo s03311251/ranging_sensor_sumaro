@@ -22,6 +22,8 @@ typedef struct pl_softI2CDriver {
 	uint8_t driver_num;
 } pl_softI2CDriver;
 
+extern pl_softI2CDriver PI2CD1;
+
 void pl_softi2cMasterTransmitTimeout(softI2CDriver *i2cp,
 		i2caddr_t addr, // 7-bit address
 		const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes,
@@ -49,5 +51,5 @@ void pl_softI2C_stop(const pl_softI2CDriver *psi2cp);
 result_t pl_softI2C_write(const softI2CDriver *si2cp, uint8_t data);
 result_t pl_softI2C_read(const softI2CDriver *si2cp, uint8_t *data,
 		_Bool sendAck);
- 
+
 #endif /* PL_SOFTI2C_H_ */

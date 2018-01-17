@@ -18,7 +18,7 @@ typedef uint16_t i2caddr_t;
 typedef uint32_t systime_t;
 
 typedef struct pl_softI2CDriver {
-	softI2CDriver SI2CD[2];
+	softI2CDriver SI2CD[16];
 	uint8_t driver_num;
 } pl_softI2CDriver;
 
@@ -36,20 +36,19 @@ void pl_softI2C_setSdaLow(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSdaHigh(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSclLow(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSclHigh(const pl_softI2CDriver *psi2cp);
-void pl_softI2C_readSda(const pl_softI2CDriver *psi2cp, _Bool value[]);
-void pl_softI2C_readScl(const pl_softI2CDriver *psi2cp, _Bool value[]);
+uint16_t pl_softI2C_readSda(const pl_softI2CDriver *psi2cp);
+uint16_t pl_softI2C_readScl(const pl_softI2CDriver *psi2cp);
 
  // Functions which take raw addresses (ie address passed must
  // already indicate read/write mode)
-result_t pl_softI2C_llRepeatedStart(const softI2CDriver *si2cp,
+void pl_softI2C_llRepeatedStart(const pl_softI2CDriver *psi2cp,
 		uint8_t rawAddr);
-result_t pl_softI2C_llStartWait(const softI2CDriver *si2cp,
-		uint8_t rawAddr);
+void pl_softI2C_llStartWait(const pl_softI2CDriver *psi2cp, uint8_t rawAddr);
 
 void pl_softI2C_stop(const pl_softI2CDriver *psi2cp);
 
-result_t pl_softI2C_write(const softI2CDriver *si2cp, uint8_t data);
-result_t pl_softI2C_read(const softI2CDriver *si2cp, uint8_t *data,
-		_Bool sendAck);
+void pl_softI2C_write(const pl_softI2CDriver *psi2cp, uint8_t data);
+void pl_softI2C_read(const pl_softI2CDriver *psi2cp, uint8_t data[],
+_Bool sendAck);
 
 #endif /* PL_SOFTI2C_H_ */

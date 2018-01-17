@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+ ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
 #define LINE_ARD_D14                PAL_LINE(GPIOB, 9U)
 #define LINE_ARD_D15                PAL_LINE(GPIOB, 8U)
 
-_Bool test = false;
+//_Bool test = false;
 
 //static void gpt4cb(GPTDriver *gptp) {
 //
@@ -48,7 +48,7 @@ _Bool test = false;
 
 
 
-static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE, };
+static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE };
 static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
 
 /*
@@ -57,14 +57,14 @@ static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
 static THD_WORKING_AREA(waThread1, 128);
 static THD_FUNCTION(Thread1, arg) {
 
-  (void)arg;
-  chRegSetThreadName("blinker");
-  while (true) {
-    palClearPad(GPIOA, GPIOA_LED_GREEN);
-    chThdSleepMilliseconds(500);
-    palSetPad(GPIOA, GPIOA_LED_GREEN);
-    chThdSleepMilliseconds(500);
-  }
+	(void) arg;
+	chRegSetThreadName("blinker");
+	while (true) {
+		palClearPad(GPIOA, GPIOA_LED_GREEN);
+		chThdSleepMilliseconds(500);
+		palSetPad(GPIOA, GPIOA_LED_GREEN);
+		chThdSleepMilliseconds(500);
+	}
 }
 
 /*
@@ -146,8 +146,6 @@ int main(void) {
 			chprintf(chp, "TIMEOUT");
 		}
 
-
-
 //		gptStartContinuous(&GPTD4, 1);
 //		gptStartOneShotI(&GPTD4, 1);
 
@@ -156,25 +154,14 @@ int main(void) {
 //		palClearPad(GPIOA, GPIOA_LED_GREEN);
 //		gptPolledDelay(&GPTD4, 1);
 
-
-
-
-
-
-
 //		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
 //		softi2cMasterTransmitTimeout(&SI2CD1, 0x04, txbuf, 3, NULL, 0,
 //				TIME_INFINITE);
-
 
 //		uint8_t rxbuf[6] = { 'U', 'f', 'a', 'i', 'l', ' ', };
 //		softi2cMasterReceiveTimeout(&SI2CD1, 0x10, rxbuf, 6, TIME_INFINITE);
 //		for (int i = 0; i < 6; i++)
 //			sdPut(&SD2, rxbuf[i]);
-
-
-
-
 
 //		uint8_t txbuf[2] = { 'a', 'A' };
 //		uint8_t rxbuf[2] = { 'z', 'Z' };
@@ -195,13 +182,7 @@ int main(void) {
 //		for (int i = 0; i < 2; i++)
 //			sdPut(&SD2, rxbuf[i]);
 
-
-
-
-
 //		chThdSleepMilliseconds(100);
 
-
-
-  }
+	}
 }

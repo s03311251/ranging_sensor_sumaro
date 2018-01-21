@@ -32,12 +32,16 @@ void pl_softi2cMasterTransmitTimeout(softI2CDriver *i2cp,
 void pl_softi2cMasterReceiveTimeout(softI2CDriver *i2cp, i2caddr_t addr, // 7-bit address
 		uint8_t *rxbuf, size_t rxbytes, systime_t timeout);
 
+_Bool pl_softi2c_none_alive(pl_softI2CDriver *psi2cp);
+void pl_softI2C_set_alive(const pl_softI2CDriver *psi2cp);
+
 void pl_softI2C_setSdaLow(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSdaHigh(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSclLow(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSclHigh(const pl_softI2CDriver *psi2cp);
 uint16_t pl_softI2C_readSda(const pl_softI2CDriver *psi2cp);
 uint16_t pl_softI2C_readScl(const pl_softI2CDriver *psi2cp);
+//void pl_softI2C_readScl(const pl_softI2CDriver *psi2cp, _Bool value[]);
 
  // Functions which take raw addresses (ie address passed must
  // already indicate read/write mode)

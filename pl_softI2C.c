@@ -6,7 +6,8 @@
  */
 
 #include <pl_softI2C.h>
-//#include "chprintf.h"
+#include "chprintf.h"
+BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
 
 uint8_t pl_softI2C_delay_us = defaultDelay_us;
 uint32_t pl_softI2C_timeout = defaultTimeout;
@@ -33,7 +34,7 @@ void pl_softi2cMasterTransmitTimeout(pl_softI2CDriver *psi2cp, i2caddr_t addr,
 	if (pl_softi2c_none_alive(si2cp)) {
 		return;
 	}
-	
+
 
 	for (size_t i = 0; i < txbytes; i++) {
 		pl_softI2C_write(psi2cp, txbuf[i]);
@@ -49,7 +50,7 @@ void pl_softi2cMasterTransmitTimeout(pl_softI2CDriver *psi2cp, i2caddr_t addr,
 		}
 
 		for (size_t i = 0; i < rxbytes - 1; i++) {
-			pl_softI2C_read(psi2cp, *(rxbuf + i), true);
+ pl_softI2C_read(psi2cp, *(rxbuf + i), true);
 			if (pl_softi2c_none_alive(psi2cp)) {
 				return;
 			}
@@ -65,7 +66,7 @@ void pl_softi2cMasterTransmitTimeout(pl_softI2CDriver *psi2cp, i2caddr_t addr,
 
 void pl_softi2cMasterReceiveTimeout(pl_softI2CDriver *psi2cp, i2caddr_t addr,
 		uint8_t **rxbuf, size_t rxbytes, systime_t timeout) {
-	
+
 	for (int i = 0; i < psi2cp->driver_num; i++) {
 		pl_softI2C_alive[i] = ack;
 	}
@@ -77,7 +78,7 @@ void pl_softi2cMasterReceiveTimeout(pl_softI2CDriver *psi2cp, i2caddr_t addr,
 	}
 
 	for (size_t i = 0; i < rxbytes - 1; i++) {
-		pl_softI2C_read(psi2cp, *(rxbuf + i), true);
+ pl_softI2C_read(psi2cp, *(rxbuf + i), true);
 		if (pl_softi2c_none_alive(psi2cp)) {
 			return;
 		}
@@ -107,41 +108,33 @@ void pl_softI2C_set_alive(const pl_softI2CDriver *psi2cp) {
 
 void pl_softI2C_setSdaLow(const pl_softI2CDriver *psi2cp) {
 	for (int i = 0; i < psi2cp->driver_num; i++) {
-		if (pl_softI2C_alive[i] == ack) {
 			osalSysLock();
 			palClearPad((psi2cp->SI2CD)[i].sdaPort, (psi2cp->SI2CD)[i].sdaPad);
 			osalSysUnlock();
-		}
 	}
 }
 
 void pl_softI2C_setSdaHigh(const pl_softI2CDriver *psi2cp) {
 	for (int i = 0; i < psi2cp->driver_num; i++) {
-		if (pl_softI2C_alive[i] == ack) {
 			osalSysLock();
 			palSetPad((psi2cp->SI2CD)[i].sdaPort, (psi2cp->SI2CD)[i].sdaPad);
 			osalSysUnlock();
-		}
 	}
 }
 
 void pl_softI2C_setSclLow(const pl_softI2CDriver *psi2cp) {
 	for (int i = 0; i < psi2cp->driver_num; i++) {
-		if (pl_softI2C_alive[i] == ack) {
 			osalSysLock();
 			palClearPad((psi2cp->SI2CD)[i].sclPort, (psi2cp->SI2CD)[i].sclPad);
 			osalSysUnlock();
-		}
 	}
 }
 
 void pl_softI2C_setSclHigh(const pl_softI2CDriver *psi2cp) {
 	for (int i = 0; i < psi2cp->driver_num; i++) {
-		if (pl_softI2C_alive[i] == ack) {
 			osalSysLock();
 			palSetPad((psi2cp->SI2CD)[i].sclPort, (psi2cp->SI2CD)[i].sclPad);
 			osalSysUnlock();
-		}
 	}
 }
 
@@ -149,12 +142,10 @@ uint16_t pl_softI2C_readSda(const pl_softI2CDriver *psi2cp) {
 	uint16_t value = 0;
 
 	for (int i = 0; i < psi2cp->driver_num; i++) {
-		if (pl_softI2C_alive[i] == ack) {
 			osalSysLock();
 			value |= (palReadPad((psi2cp->SI2CD)[i].sdaPort,
 					(psi2cp->SI2CD)[i].sdaPad)) << i;
 			osalSysUnlock();
-		}
 	}
 
 	return value;
@@ -164,18 +155,86 @@ uint16_t pl_softI2C_readScl(const pl_softI2CDriver *psi2cp) {
 	uint16_t value = 0;
 
 	for (int i = 0; i < psi2cp->driver_num; i++) {
-		if (pl_softI2C_alive[i] == ack) {
 			osalSysLock();
 			value |= (palReadPad((psi2cp->SI2CD)[i].sclPort,
 					(psi2cp->SI2CD)[i].sclPad)) << i;
 			osalSysUnlock();
-		}
 	}
 
 	return value;
 }
 
-//void pl_softI2C_readScl(const pl_softI2CDriver *psi2cp, _Bool value[]) {
+//void pl_softI2C_alive_setSdaLow(const pl_softI2CDriver *psi2cp) {
+//	for (int i = 0; i < psi2cp->driver_num; i++) {
+//		if (pl_softI2C_alive[i] == ack) {
+//			osalSysLock();
+//			palClearPad((psi2cp->SI2CD)[i].sdaPort, (psi2cp->SI2CD)[i].sdaPad);
+//			osalSysUnlock();
+//		}
+//	}
+//}
+//
+//void pl_softI2C_alive_setSdaHigh(const pl_softI2CDriver *psi2cp) {
+//	for (int i = 0; i < psi2cp->driver_num; i++) {
+//		if (pl_softI2C_alive[i] == ack) {
+//			osalSysLock();
+//			palSetPad((psi2cp->SI2CD)[i].sdaPort, (psi2cp->SI2CD)[i].sdaPad);
+//			osalSysUnlock();
+//		}
+//	}
+//}
+//
+//void pl_softI2C_alive_setSclLow(const pl_softI2CDriver *psi2cp) {
+//	for (int i = 0; i < psi2cp->driver_num; i++) {
+//		if (pl_softI2C_alive[i] == ack) {
+//			osalSysLock();
+//			palClearPad((psi2cp->SI2CD)[i].sclPort, (psi2cp->SI2CD)[i].sclPad);
+//			osalSysUnlock();
+//		}
+//	}
+//}
+//
+//void pl_softI2C_alive_setSclHigh(const pl_softI2CDriver *psi2cp) {
+//	for (int i = 0; i < psi2cp->driver_num; i++) {
+//		if (pl_softI2C_alive[i] == ack) {
+//			osalSysLock();
+//			palSetPad((psi2cp->SI2CD)[i].sclPort, (psi2cp->SI2CD)[i].sclPad);
+//			osalSysUnlock();
+//		}
+//	}
+//}
+//
+//uint16_t pl_softI2C_alive_readSda(const pl_softI2CDriver *psi2cp) {
+//	uint16_t value = 0;
+//
+//	for (int i = 0; i < psi2cp->driver_num; i++) {
+//		if (pl_softI2C_alive[i] == ack) {
+//			osalSysLock();
+//			value |= (palReadPad((psi2cp->SI2CD)[i].sdaPort,
+//					(psi2cp->SI2CD)[i].sdaPad)) << i;
+//			osalSysUnlock();
+//		}
+//	}
+//
+//	return value;
+// }
+//
+//uint16_t pl_softI2C_alive_readScl(const pl_softI2CDriver *psi2cp) {
+//	uint16_t value = 0;
+//
+//	for (int i = 0; i < psi2cp->driver_num; i++) {
+//		if (pl_softI2C_alive[i] == ack) {
+//			osalSysLock();
+//			value |= (palReadPad((psi2cp->SI2CD)[i].sclPort,
+//					(psi2cp->SI2CD)[i].sclPad)) << i;
+//			osalSysUnlock();
+//		}
+//	}
+//
+//	return value;
+//}
+
+//void pl_softI2C_alive_readScl(const pl_softI2CDriver *psi2cp, _Bool value[]) {
 //	for (int i = 0; i < psi2cp->driver_num; i++) {
 //		value[i] = 0;
 //	}
@@ -233,7 +292,7 @@ void pl_softI2C_llStartWait(const pl_softI2CDriver *psi2cp, uint8_t rawAddr) {
 		gptPolledDelay(&GPTD4, pl_softI2C_delay_us);
 
 		pl_softI2C_write(psi2cp, rawAddr);
-//		pl_softI2C_stop(psi2cp);
+
 		for (int i = 0; i < psi2cp->driver_num; i++) {
 			switch (pl_softI2C_alive[i]) {
 			case ack:
@@ -291,11 +350,8 @@ void pl_softI2C_write(const pl_softI2CDriver *psi2cp, uint8_t data) {
 
 	// Wait for SCL to be set high (in case wait states are inserted)
 	uint16_t scl_value = pl_softI2C_readScl(psi2cp);
-//	BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
-//	chprintf(chp, "abc:%4d\r\n", scl_value);
-
-	//	while (scl_value != 0xFF) {
-	while (false) {
+	while (scl_value != 0xFF) {
+//	while (false) {
 		if (chVTTimeElapsedSinceX(timeout_start) > pl_softI2C_timeout) {
 			for (int i = 0; i < psi2cp->driver_num; i++) {
 				if (((scl_value >> i) & 1) == 0) {
@@ -308,15 +364,20 @@ void pl_softI2C_write(const pl_softI2CDriver *psi2cp, uint8_t data) {
 	}
 
 	uint16_t sda_value = pl_softI2C_readSda(psi2cp);
+	chprintf(chp, "sda:%d\r\n", sda_value);
+	chprintf(chp, "\r\n");
+
 	for (int i = 0; i < psi2cp->driver_num; i++) {
 		if (pl_softI2C_alive[i] != timedOut) {
 			if (((sda_value >> i) & 1)) {
-				pl_softI2C_alive[i] = ack;
-			} else {
 				pl_softI2C_alive[i] = nack;
+			} else {
+				pl_softI2C_alive[i] = ack;
 			}
 		}
+		chprintf(chp, "%d ", pl_softI2C_alive[i]);
 	}
+	chprintf(chp, "\r\n");
 
 	gptPolledDelay(&GPTD4, pl_softI2C_delay_us);
 
@@ -327,8 +388,8 @@ void pl_softI2C_write(const pl_softI2CDriver *psi2cp, uint8_t data) {
 void pl_softI2C_read(const pl_softI2CDriver *psi2cp, uint8_t data[16],
 _Bool sendAck) {
 
-	
-	
+
+
 	for (uint8_t i = 8; i; --i) {
 		data[i] = 0;
 	}
@@ -338,18 +399,18 @@ _Bool sendAck) {
 		data[i] <<= 1;
 
 		// Force SCL low
-		pl_softI2C_setSclLow(psi2cp);
+ pl_softI2C_setSclLow(psi2cp);
 
 		// Release SDA (from previous ACK)
-		pl_softI2C_setSdaHigh(psi2cp);
+ pl_softI2C_setSdaHigh(psi2cp);
 		gptPolledDelay(&GPTD4, pl_softI2C_delay_us);
 
 		// Release SCL
-		pl_softI2C_setSclHigh(psi2cp);
+ pl_softI2C_setSclHigh(psi2cp);
 		gptPolledDelay(&GPTD4, pl_softI2C_delay_us);
 
 		// Read clock stretch
-		uint16_t scl_value = pl_softI2C_readScl(psi2cp);
+ uint16_t scl_value = pl_softI2C_readScl(psi2cp);
 		while (scl_value != 0xFF) {
 			if (chVTTimeElapsedSinceX(timeout_start) > pl_softI2C_timeout) {
 				for (int i = 0; i < psi2cp->driver_num; i++) {
@@ -370,22 +431,22 @@ _Bool sendAck) {
 		// Put ACK/NACK
 
 		// Force SCL low
-		pl_softI2C_setSclLow(psi2cp);
+ pl_softI2C_setSclLow(psi2cp);
 		if (sendAck) {
 			// Force SDA low
-			pl_softI2C_setSdaLow(psi2cp);
+ pl_softI2C_setSdaLow(psi2cp);
 		} else {
 			// Release SDA
-			pl_softI2C_setSdaHigh(psi2cp);
+ pl_softI2C_setSdaHigh(psi2cp);
 		}
 
 		gptPolledDelay(&GPTD4, pl_softI2C_delay_us);
 
 		// Release SCL
-		pl_softI2C_setSclHigh(psi2cp);
+ pl_softI2C_setSclHigh(psi2cp);
 
 		// Wait for SCL to return high
-		scl_value = pl_softI2C_readScl(psi2cp);
+ scl_value = pl_softI2C_readScl(psi2cp);
 		while (scl_value != 0xFF) {
 			if (chVTTimeElapsedSinceX(timeout_start) > pl_softI2C_timeout) {
 				for (int i = 0; i < psi2cp->driver_num; i++) {
@@ -400,7 +461,7 @@ _Bool sendAck) {
 		gptPolledDelay(&GPTD4, pl_softI2C_delay_us);
 
 		// Keep SCL low between bytes
-		pl_softI2C_setSclLow(psi2cp);
+ pl_softI2C_setSclLow(psi2cp);
 	}
 }
  */

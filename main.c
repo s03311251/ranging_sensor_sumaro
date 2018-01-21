@@ -23,7 +23,7 @@
 #include "softI2C.h"
 #include "pl_softI2C.h"
 
-BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
+//BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
 
 #define LINE_ARD_D14                PAL_LINE(GPIOB, 9U)
 #define LINE_ARD_D15                PAL_LINE(GPIOB, 8U)
@@ -149,14 +149,14 @@ int main(void) {
 	while (true) {
 
 // Testing VL53L0X
-		
+
 //		chprintf(chp, "\rabc:%4d", VL53L0X_readRangeContinuousMillimeters());
 //		if (VL53L0X_timeoutOccurred()) {
 //			chprintf(chp, "TIMEOUT");
 //		}
 
 // Testing timer
-		
+
 //		gptStartContinuous(&GPTD4, 1);
 //		gptStartOneShotI(&GPTD4, 1);
 
@@ -196,29 +196,13 @@ int main(void) {
 //			sdPut(&SD2, rxbuf[i]);
 
 // Testing parallel softI2C
-		pl_softI2C_llStartWait(&PI2CD1, 0x10 << 1);
-//		pl_softI2C_set_alive(&PI2CD1);
-//		
-//		_Bool scl_value[16];
-//		
-//		pl_softI2C_setSclHigh(&PI2CD1);
-//		chThdSleepMilliseconds(1);
-//		pl_softI2C_readScl(&PI2CD1, scl_value);
-//		for (int i = 0; i < 16; i++) {
-//			chprintf(chp, "%d ", scl_value[i]);
-//		}
-//		chprintf(chp, "\r\n");
-//		
-//		pl_softI2C_setSclLow(&PI2CD1);
-//		chThdSleepMilliseconds(1);
-//		pl_softI2C_readScl(&PI2CD1, scl_value);
-//		for (int i = 0; i < 16; i++) {
-//			chprintf(chp, "%d ", scl_value[i]);
-//		}
-//		chprintf(chp, "\r\n");
+		pl_softI2C_set_alive(&PI2CD1);
 
 //		softI2C_write(&SI2CD1, 0x10 << 1);
-//		softI2C_stop(&SI2CD1);
+//		pl_softI2C_write(&PI2CD1, 0x10 << 1);
+
+		pl_softI2C_llStartWait(&PI2CD1, 0x10 << 1);
+//		softI2C_llStartWait(&SI2CD1, 0x10 << 1);
 
 		chThdSleepMilliseconds(100);
 

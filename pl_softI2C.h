@@ -41,7 +41,14 @@ void pl_softI2C_setSclLow(const pl_softI2CDriver *psi2cp);
 void pl_softI2C_setSclHigh(const pl_softI2CDriver *psi2cp);
 uint16_t pl_softI2C_readSda(const pl_softI2CDriver *psi2cp);
 uint16_t pl_softI2C_readScl(const pl_softI2CDriver *psi2cp);
-//void pl_softI2C_readScl(const pl_softI2CDriver *psi2cp, _Bool value[]);
+
+//void pl_softI2C_alive_setSdaLow(const pl_softI2CDriver *psi2cp);
+//void pl_softI2C_alive_setSdaHigh(const pl_softI2CDriver *psi2cp);
+//void pl_softI2C_alive_setSclLow(const pl_softI2CDriver *psi2cp);
+//void pl_softI2C_alive_setSclHigh(const pl_softI2CDriver *psi2cp);
+//uint16_t pl_softI2C_alive_readSda(const pl_softI2CDriver *psi2cp);
+//uint16_t pl_softI2C_alive_readScl(const pl_softI2CDriver *psi2cp);
+//void pl_softI2C_alive_readScl(const pl_softI2CDriver *psi2cp, _Bool value[]);
 
  // Functions which take raw addresses (ie address passed must
  // already indicate read/write mode)

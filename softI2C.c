@@ -254,8 +254,7 @@ result_t softI2C_llRepeatedStart(const softI2CDriver *si2cp, uint8_t rawAddr) {
 }
 
 result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
-	//systime_t timeout_start = chVTGetSystemTime();
-	uint32_t timeout_start = chVTGetSystemTime();
+	systime_t timeout_start = chVTGetSystemTime();
 
 	while (chVTTimeElapsedSinceX(timeout_start) <= softI2C_timeout) {
 		// Force SDA low
@@ -279,8 +278,8 @@ result_t softI2C_llStartWait(const softI2CDriver *si2cp, uint8_t rawAddr) {
 }
 
 result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
-	//systime_t timeout_start = chVTGetSystemTime();
-	uint32_t timeout_start = chVTGetSystemTime();
+	systime_t timeout_start = chVTGetSystemTime();
+
 	for (uint8_t i = 8; i; --i) {
 		// Force SCL low
 		softI2C_setSclLow(si2cp);
@@ -337,8 +336,7 @@ result_t softI2C_write(const softI2CDriver *si2cp, uint8_t data) {
 
 result_t softI2C_read(const softI2CDriver *si2cp, uint8_t *data, _Bool sendAck) {
 	*data = 0;
-	//systime_t timeout_start = chVTGetSystemTime();
-	uint32_t timeout_start = chVTGetSystemTime();
+	systime_t timeout_start = chVTGetSystemTime();
 
 	for (uint8_t i = 8; i; --i) {
 		*data <<= 1;

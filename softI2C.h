@@ -16,7 +16,7 @@ typedef uint16_t i2caddr_t;
 typedef uint32_t systime_t;
 
 #define defaultDelay_us 1
-#define defaultTimeout MS2ST(100)
+#define defaultTimeout MS2ST(1) // 1ms
 
 typedef struct softI2CDriver {
 	//const softI2CConfig *config;

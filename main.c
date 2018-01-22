@@ -168,7 +168,7 @@ int main(void) {
 // Testing softI2C
 
 //		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
-//		softi2cMasterTransmitTimeout(&SI2CD1, 0x04, txbuf, 3, NULL, 0,
+//		softi2cMasterTransmitTimeout(&SI2CD1, 0x10, txbuf, 3, NULL, 0,
 //		TIME_INFINITE);
 
 //		uint8_t rxbuf[6] = { 'U', 'f', 'a', 'i', 'l', ' ', };
@@ -195,14 +195,31 @@ int main(void) {
 //		for (int i = 0; i < 2; i++)
 //			sdPut(&SD2, rxbuf[i]);
 
+
+
+
 // Testing parallel softI2C
-		pl_softI2C_set_alive(&PI2CD1);
 
-//		softI2C_write(&SI2CD1, 0x10 << 1);
-//		pl_softI2C_write(&PI2CD1, 0x10 << 1);
+//		uint8_t txbuf[3] = { 'a', 'b', 0x10 };
+//		pl_softi2cMasterTransmitTimeout(&PI2CD1, 0x10, txbuf, 3, NULL, 0,
+//				MS2ST(1));
 
-		pl_softI2C_llStartWait(&PI2CD1, 0x10 << 1);
-//		softI2C_llStartWait(&SI2CD1, 0x10 << 1);
+		uint8_t test_msg[6] = { 'U', 'f', 'a', 'i', 'l', ' ', };
+		uint8_t rxbuf[6][16];
+		for (int i = 0; i < 16; i++) {
+			for (int j = 0; j < 6; j++) {
+				rxbuf[j][i] = test_msg[j];
+			}
+		}
+		pl_softi2cMasterReceiveTimeout(&PI2CD1, 0x10, rxbuf, 6, MS2ST(1));
+		for (int i = 0; i < 16; i++) {
+			for (int j = 0; j < 6; j++) {
+				sdPut(&SD2, rxbuf[j][i]);
+			}
+		}
+		uint8_t qwetrwe[2] = { '\r', '\n' };
+		sdPut(&SD2, qwetrwe[0]);
+		sdPut(&SD2, qwetrwe[1]);
 
 		chThdSleepMilliseconds(100);
 

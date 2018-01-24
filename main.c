@@ -101,9 +101,9 @@ int main(void) {
 //	palSetPadMode(GPIOB, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(GPIOB, 9U, PAL_MODE_OUTPUT_OPENDRAIN);
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < VL53L0X_COUNT; i++) {
 		palSetPadMode(VB[i].xshut_port, VB[i].xshut_pad,
-				PAL_MODE_OUTPUT_PUSHPULL);
+				PAL_MODE_OUTPUT_OPENDRAIN);
 	}
 
 //	for (int i = 0; i < 16; i++) {

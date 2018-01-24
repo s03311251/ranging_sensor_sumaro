@@ -302,6 +302,26 @@ _Bool VL53L0X_init(VL53L0X_board vb, _Bool io_2v8) {
 	return true;
 }
 
+void VL53L0X_setProfile(VL53L0X_board vb, VL53L0X_profile profile) {
+	switch (profile) {
+	case VL53L0X_HighAccuracy:
+		VL53L0X_setMeasurementTimingBudget(vb, 20000);
+		break;
+
+	case VL53L0X_HighSpeed:
+		VL53L0X_setMeasurementTimingBudget(vb, 200000);
+		break;
+
+//	case VL53L0X_LongRange:
+//		// lower the return signal rate limit (default is 0.25 MCPS)
+//		VL53L0X_setSignalRateLimit(vb, 0.1);
+//		// increase laser pulse periods (defaults are 14 and 10 PCLKs)
+//		  sensor.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+//		  sensor.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+//		break;
+	}
+}
+
 // Write an 8-bit register
 void VL53L0X_writeReg(VL53L0X_board vb, uint8_t reg, uint8_t value) {
 	uint8_t txbuf[2];
@@ -787,10 +807,9 @@ void VL53L0X_startContinuous(VL53L0X_board vb) {
 	}
 }
 
-/*
- // Stop continuous measurements
- // based on VL53L0X_StopMeasurement()
- void VL53L0X::stopContinuous(void)
+// Stop continuous measurements
+// based on VL53L0X_StopMeasurement()
+/*void VL53L0X::stopContinuous(void)
  {
  writeReg(SYSRANGE_START, 0x01); // VL53L0X_REG_SYSRANGE_MODE_SINGLESHOT
 
@@ -799,8 +818,8 @@ void VL53L0X_startContinuous(VL53L0X_board vb) {
  writeReg(0x91, 0x00);
  writeReg(0x00, 0x01);
  writeReg(0xFF, 0x00);
- }
- */
+ }*/
+
 // Returns a range reading in millimeters when continuous mode is active
 // (readRangeSingleMillimeters() also calls this function after starting a
 // single-shot range measurement)

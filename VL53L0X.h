@@ -106,7 +106,12 @@ typedef struct VL53L0X_board {
 } VL53L0X_board;
 
 /* Defines VL53L0X boards */
-extern VL53L0X_board VB[2];
+#define VL53L0X_COUNT 2
+extern VL53L0X_board VB[VL53L0X_COUNT];
+
+typedef enum VL53L0X_profile {
+	VL53L0X_HighAccuracy, VL53L0X_HighSpeed //, VL53L0X_LongRange
+} VL53L0X_profile;
 
 typedef enum VL53L0X_vcselPeriodType {
 	VcselPeriodPreRange, VcselPeriodFinalRange
@@ -116,6 +121,7 @@ void VL53L0X_setAddress(VL53L0X_board vb);
 // inline uint8_t getAddress(void) { return address; }
 
 _Bool VL53L0X_init(VL53L0X_board vb, _Bool io_2v8);
+void VL53L0X_setProfile(VL53L0X_board vb, VL53L0X_profile profile);
 
 void VL53L0X_writeReg(VL53L0X_board vb, uint8_t reg, uint8_t value);
 void VL53L0X_writeReg16Bit(VL53L0X_board vb, uint8_t reg, uint16_t value);

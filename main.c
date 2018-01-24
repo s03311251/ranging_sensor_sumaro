@@ -17,13 +17,13 @@
 #include "ch.h"
 #include "hal.h"
 #include "ch_test.h"
-#include "chprintf.h"
 
 #include "VL53L0X.h"
 #include "softI2C.h"
 #include "pl_softI2C.h"
 
-//BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
+#include "chprintf.h"
+BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
 
 #define LINE_ARD_D14                PAL_LINE(GPIOB, 9U)
 #define LINE_ARD_D15                PAL_LINE(GPIOB, 8U)
@@ -49,7 +49,7 @@
 
 
 static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE };
-static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
+//static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
 
 /*
  * Green LED blinker thread, times are in milliseconds.
@@ -84,7 +84,7 @@ int main(void) {
 
 	sdStart(&SD2, NULL);
 	i2cStart(&I2CD1, &i2ccfg);
-	gptStart(&GPTD4, &gpt4cfg);
+//	gptStart(&GPTD4, &gpt4cfg);
 
 	/*
 	 * Creates the blinker thread.
@@ -98,13 +98,20 @@ int main(void) {
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 	palSetLineMode(LINE_ARD_D14,
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+//	palSetPadMode(GPIOB, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
+//	palSetPadMode(GPIOB, 9U, PAL_MODE_OUTPUT_OPENDRAIN);
 
-	for (int i = 0; i < 16; i++) {
-		palSetPadMode(PI2CD1.SI2CD[i].sdaPort, PI2CD1.SI2CD[i].sdaPad,
-				PAL_MODE_OUTPUT_OPENDRAIN);
-		palSetPadMode(PI2CD1.SI2CD[i].sclPort, PI2CD1.SI2CD[i].sclPad,
-				PAL_MODE_OUTPUT_OPENDRAIN);
+	for (int i = 0; i < 2; i++) {
+		palSetPadMode(VB[i].xshut_port, VB[i].xshut_pad,
+				PAL_MODE_OUTPUT_PUSHPULL);
 	}
+
+//	for (int i = 0; i < 16; i++) {
+//		palSetPadMode(PI2CD1.SI2CD[i].sdaPort, PI2CD1.SI2CD[i].sdaPad,
+//				PAL_MODE_OUTPUT_OPENDRAIN);
+//		palSetPadMode(PI2CD1.SI2CD[i].sclPort, PI2CD1.SI2CD[i].sclPad,
+//				PAL_MODE_OUTPUT_OPENDRAIN);
+//	}
 //	palSetPadMode(SI2CD1.sdaPort, SI2CD1.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(SI2CD1.sclPort, SI2CD1.sclPad, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(SI2CD2.sdaPort, SI2CD2.sdaPad, PAL_MODE_OUTPUT_OPENDRAIN);
@@ -142,18 +149,40 @@ int main(void) {
 //	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 
-//	VL53L0X_init();
-//	VL53L0X_setTimeout(500);
-//	VL53L0X_startContinuous();
+	palClearPad(VB[0].xshut_port, VB[0].xshut_pad);
+	palClearPad(VB[1].xshut_port, VB[1].xshut_pad);
+
+	palSetPad(VB[0].xshut_port, VB[0].xshut_pad);
+	chThdSleepMilliseconds(2);
+	VL53L0X_setAddress(VB[0]);
+	VL53L0X_init(VB[0], true);
+
+	palSetPad(VB[1].xshut_port, VB[1].xshut_pad);
+	chThdSleepMilliseconds(2);
+	VL53L0X_setAddress(VB[1]);
+	VL53L0X_init(VB[1], true);
+
+	VL53L0X_setTimeout(500);
+	VL53L0X_startContinuous(VB[0]);
+	VL53L0X_startContinuous(VB[1]);
+
+//	VL53L0X_readRangeContinuousMillimeters_loop(VB, 2);
 
 	while (true) {
 
 // Testing VL53L0X
 
-//		chprintf(chp, "\rabc:%4d", VL53L0X_readRangeContinuousMillimeters());
-//		if (VL53L0X_timeoutOccurred()) {
-//			chprintf(chp, "TIMEOUT");
-//		}
+		chprintf(chp, "\rabc:%5d",
+				VL53L0X_readRangeContinuousMillimeters(VB[0]));
+		chprintf(chp, " def:%5d",
+				VL53L0X_readRangeContinuousMillimeters(VB[1]));
+
+
+
+
+
+
+
 
 // Testing timer
 
@@ -204,24 +233,24 @@ int main(void) {
 //		pl_softi2cMasterTransmitTimeout(&PI2CD1, 0x10, txbuf, 3, NULL, 0,
 //				MS2ST(1));
 
-		uint8_t test_msg[6] = { 'U', 'f', 'a', 'i', 'l', ' ', };
-		uint8_t rxbuf[6][16];
-		for (int i = 0; i < 16; i++) {
-			for (int j = 0; j < 6; j++) {
-				rxbuf[j][i] = test_msg[j];
-			}
-		}
-		pl_softi2cMasterReceiveTimeout(&PI2CD1, 0x10, rxbuf, 6, MS2ST(1));
-		for (int i = 0; i < 16; i++) {
-			for (int j = 0; j < 6; j++) {
-				sdPut(&SD2, rxbuf[j][i]);
-			}
-		}
-		uint8_t qwetrwe[2] = { '\r', '\n' };
-		sdPut(&SD2, qwetrwe[0]);
-		sdPut(&SD2, qwetrwe[1]);
+//		uint8_t test_msg[6] = { 'U', 'f', 'a', 'i', 'l', ' ', };
+//		uint8_t rxbuf[6][16];
+//		for (int i = 0; i < 16; i++) {
+//			for (int j = 0; j < 6; j++) {
+//				rxbuf[j][i] = test_msg[j];
+//			}
+//		}
+//		pl_softi2cMasterReceiveTimeout(&PI2CD1, 0x10, rxbuf, 6, MS2ST(1));
+//		for (int i = 0; i < 16; i++) {
+//			for (int j = 0; j < 6; j++) {
+//				sdPut(&SD2, rxbuf[j][i]);
+//			}
+//		}
+//		uint8_t qwetrwe[2] = { '\r', '\n' };
+//		sdPut(&SD2, qwetrwe[0]);
+//		sdPut(&SD2, qwetrwe[1]);
 
-		chThdSleepMilliseconds(100);
+//		chThdSleepMilliseconds(100);
 
 	}
 }

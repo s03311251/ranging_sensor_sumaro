@@ -98,46 +98,58 @@
 #define ALGO_PHASECAL_LIM                           0x30
 #define ALGO_PHASECAL_CONFIG_TIMEOUT                0x30
 
+typedef struct VL53L0X_board {
+	uint8_t address;
+	I2CDriver* I2CD;
+	ioportid_t xshut_port;
+	uint8_t xshut_pad;
+} VL53L0X_board;
+
+/* Defines VL53L0X boards */
+extern VL53L0X_board VB[2];
+
 typedef enum VL53L0X_vcselPeriodType {
 	VcselPeriodPreRange, VcselPeriodFinalRange
 } VL53L0X_vcselPeriodType;
 
-/*
- void setAddress(uint8_t new_addr);
- inline uint8_t getAddress(void) { return address; }
- */
-_Bool VL53L0X_init(void);
-//_Bool VL53L0X_init(_Bool io_2v8);
-uint8_t VL53L0X_readReg(uint8_t reg);
+void VL53L0X_setAddress(VL53L0X_board vb);
+// inline uint8_t getAddress(void) { return address; }
 
-void VL53L0X_writeReg(uint8_t reg, uint8_t value);
-void VL53L0X_writeReg16Bit(uint8_t reg, uint16_t value);
-void VL53L0X_writeReg32Bit(uint8_t reg, uint32_t value);
-uint8_t VL53L0X_readReg(uint8_t reg);
-uint16_t VL53L0X_readReg16Bit(uint8_t reg);
+_Bool VL53L0X_init(VL53L0X_board vb, _Bool io_2v8);
+
+void VL53L0X_writeReg(VL53L0X_board vb, uint8_t reg, uint8_t value);
+void VL53L0X_writeReg16Bit(VL53L0X_board vb, uint8_t reg, uint16_t value);
+void VL53L0X_writeReg32Bit(VL53L0X_board vb, uint8_t reg, uint32_t value);
+uint8_t VL53L0X_readReg(VL53L0X_board vb, uint8_t reg);
+uint16_t VL53L0X_readReg16Bit(VL53L0X_board vb, uint8_t reg);
 // uint32_t readReg32Bit(uint8_t reg);
 
-void VL53L0X_writeMulti(uint8_t reg, uint8_t const * src, uint8_t count);
-void VL53L0X_readMulti(uint8_t reg, uint8_t * dst, uint8_t count);
+void VL53L0X_writeMulti(VL53L0X_board vb, uint8_t reg, uint8_t const * src,
+		uint8_t count);
+void VL53L0X_readMulti(VL53L0X_board vb, uint8_t reg, uint8_t * dst,
+		uint8_t count);
 
-bool VL53L0X_setSignalRateLimit(float limit_Mcps);
+bool VL53L0X_setSignalRateLimit(VL53L0X_board vb, float limit_Mcps);
 // float getSignalRateLimit(void);
 
-_Bool VL53L0X_setMeasurementTimingBudget(uint32_t budget_us);
-uint32_t VL53L0X_getMeasurementTimingBudget(void);
+_Bool VL53L0X_setMeasurementTimingBudget(VL53L0X_board vb, uint32_t budget_us);
+uint32_t VL53L0X_getMeasurementTimingBudget(VL53L0X_board vb);
 
 // bool setVcselPulsePeriod(vcselPeriodType type, uint8_t period_pclks);
-uint8_t VL53L0X_getVcselPulsePeriod(VL53L0X_vcselPeriodType type);
+uint8_t VL53L0X_getVcselPulsePeriod(VL53L0X_board vb,
+		VL53L0X_vcselPeriodType type);
 
-void VL53L0X_startContinuous(void);
+void VL53L0X_startContinuous(VL53L0X_board vb);
 //void VL53L0X_startContinuous(uint32_t period_ms);
 // void stopContinuous(void);
-uint16_t VL53L0X_readRangeContinuousMillimeters(void);
+uint16_t VL53L0X_readRangeContinuousMillimeters(VL53L0X_board vb);
+void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
+		uint32_t count);
 // uint16_t readRangeSingleMillimeters(void);
 
 void VL53L0X_setTimeout(uint16_t timeout);
 //uint16_t VL53L0X_getTimeout(void);
-_Bool VL53L0X_timeoutOccurred(void);
+//_Bool VL53L0X_timeoutOccurred(void);
 /*
 
  // TCC: Target CentreCheck
@@ -155,14 +167,17 @@ typedef struct VL53L0X_SequenceStepTimeouts {
  uint32_t msrc_dss_tcc_us,    pre_range_us,    final_range_us;
 } VL53L0X_SequenceStepTimeouts;
 
-_Bool VL53L0X_getSpadInfo(uint8_t * count, _Bool * type_is_aperture);
+_Bool VL53L0X_getSpadInfo(VL53L0X_board vb, uint8_t * count,
+		_Bool * type_is_aperture);
 
-void VL53L0X_getSequenceStepEnables(VL53L0X_SequenceStepEnables * enables);
-void VL53L0X_getSequenceStepTimeouts(
+void VL53L0X_getSequenceStepEnables(VL53L0X_board vb,
+		VL53L0X_SequenceStepEnables * enables);
+void VL53L0X_getSequenceStepTimeouts(VL53L0X_board vb,
 		VL53L0X_SequenceStepEnables const * enables,
 		VL53L0X_SequenceStepTimeouts * timeouts);
 
-_Bool VL53L0X_performSingleRefCalibration(uint8_t vhv_init_byte);
+_Bool VL53L0X_performSingleRefCalibration(VL53L0X_board vb,
+		uint8_t vhv_init_byte);
 
 uint16_t VL53L0X_decodeTimeout(uint16_t reg_val);
 uint16_t VL53L0X_encodeTimeout(uint16_t timeout_mclks);

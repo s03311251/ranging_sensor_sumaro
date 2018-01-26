@@ -151,7 +151,7 @@ void VL53L0X_startContinuous(VL53L0X_board vb);
 uint16_t VL53L0X_readRangeContinuousMillimeters(VL53L0X_board vb);
 void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 		uint32_t count);
-// uint16_t readRangeSingleMillimeters(void);
+uint16_t VL53L0X_readRangeSingleMillimeters(VL53L0X_board vb);
 
 void VL53L0X_setTimeout(uint16_t timeout);
 //uint16_t VL53L0X_getTimeout(void);

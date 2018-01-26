@@ -48,7 +48,7 @@ BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
 
 
 
-static const I2CConfig i2ccfg = { OPMODE_I2C, 100000, STD_DUTY_CYCLE };
+static const I2CConfig i2ccfg = { OPMODE_I2C, 400000, FAST_DUTY_CYCLE_2 };
 //static const GPTConfig gpt4cfg = { 500000, NULL, 0, 0 };
 
 /*
@@ -84,6 +84,7 @@ int main(void) {
 
 	sdStart(&SD2, NULL);
 	i2cStart(&I2CD1, &i2ccfg);
+	i2cStart(&I2CD2, &i2ccfg);
 //	gptStart(&GPTD4, &gpt4cfg);
 
 	/*
@@ -92,13 +93,26 @@ int main(void) {
 	chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO + 1, Thread1,
 	NULL);
 
-	/* Configuring I2C related PINs */
+	/* Configuring I2C related PINs
+	 * I2C1: SDA: PB9  , SCL: PB8
+	 * I2C2: SDA: PB3  , SCL: PB10
+	 * I2C3: SDA: PC9  , SCL: PA8 */
 
 	palSetLineMode(LINE_ARD_D15,
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
 	palSetLineMode(LINE_ARD_D14,
 			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
-//	palSetPadMode(GPIOB, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
+
+//	palSetLineMode(PAL_LINE(GPIOB, 3U),
+//			PAL_MODE_ALTERNATE(9) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+//	palSetLineMode(PAL_LINE(GPIOB, 10U),
+//			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+//	palSetLineMode(PAL_LINE(GPIOC, 9U),
+//			PAL_MODE_ALTERNATE(9) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+//	palSetLineMode(PAL_LINE(GPIOB, 8U),
+//			PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_PULLUP);
+
+	//	palSetPadMode(GPIOB, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(GPIOB, 9U, PAL_MODE_OUTPUT_OPENDRAIN);
 
 	for (int i = 0; i < VL53L0X_COUNT; i++) {
@@ -149,22 +163,21 @@ int main(void) {
 //	palSetPadMode(GPIOB, 10U, PAL_MODE_OUTPUT_OPENDRAIN);
 //	palSetPadMode(GPIOA, 8U, PAL_MODE_OUTPUT_OPENDRAIN);
 
-	palClearPad(VB[0].xshut_port, VB[0].xshut_pad);
-	palClearPad(VB[1].xshut_port, VB[1].xshut_pad);
+	for (int i = 0; i < VL53L0X_COUNT; i++) {
+		palClearPad(VB[i].xshut_port, VB[i].xshut_pad);
+	}
 
-	palSetPad(VB[0].xshut_port, VB[0].xshut_pad);
-	chThdSleepMilliseconds(2);
-	VL53L0X_setAddress(VB[0]);
-	VL53L0X_init(VB[0], true);
-
-	palSetPad(VB[1].xshut_port, VB[1].xshut_pad);
-	chThdSleepMilliseconds(2);
-	VL53L0X_setAddress(VB[1]);
-	VL53L0X_init(VB[1], true);
-
+	for (int i = 0; i < VL53L0X_COUNT; i++) {
+		palSetPad(VB[i].xshut_port, VB[i].xshut_pad);
+		// HW standby, I don't know how long it should be
+		chThdSleepMilliseconds(2);
+		VL53L0X_setAddress(VB[i]);
+		VL53L0X_init(VB[i], true);
+	}
 	VL53L0X_setTimeout(500);
-	VL53L0X_startContinuous(VB[0]);
-	VL53L0X_startContinuous(VB[1]);
+
+//	VL53L0X_startContinuous(VB[0]);
+//	VL53L0X_startContinuous(VB[1]);
 
 //	VL53L0X_readRangeContinuousMillimeters_loop(VB, 2);
 
@@ -172,17 +185,16 @@ int main(void) {
 
 // Testing VL53L0X
 
-		chprintf(chp, "\rabc:%5d",
-				VL53L0X_readRangeContinuousMillimeters(VB[0]));
-		chprintf(chp, " def:%5d",
-				VL53L0X_readRangeContinuousMillimeters(VB[1]));
+//		chprintf(chp, "\rabc:%5d",
+//				VL53L0X_readRangeContinuousMillimeters(VB[0]));
+//		chprintf(chp, " def:%5d",
+//				VL53L0X_readRangeContinuousMillimeters(VB[1]));
 
-
-
-
-
-
-
+		for (int i = 0; i < VL53L0X_COUNT; i++) {
+			chprintf(chp, "%2d: %5d",
+					VL53L0X_readRangeSingleMillimeters(VB[i]));
+		}
+		chprintf(chp, "\r\n");
 
 // Testing timer
 

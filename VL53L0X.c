@@ -13,10 +13,14 @@
 #include "VL53L0X.h"
 #include "chprintf.h"
 
-VL53L0X_board VB[2] = { { 0b0101010, &I2CD1, GPIOB, 5U }, { 0b0101011, &I2CD1,
-		GPIOB, 4U } };
-
-softI2CDriver SI2CD = { GPIOB, 5, GPIOB, 4 };
+VL53L0X_board VB[VL53L0X_COUNT] = { { 0b0101010, &I2CD1, GPIOB, 5U }, {
+		0b0101011, &I2CD1, GPIOB, 4U } };/*, { 0b0101100, &I2CD1, GPIOB, 10U }, {
+		0b0101101, &I2CD1, GPIOA, 8U }, { 0b0101110, &I2CD1, GPIOA, 9U }, {
+		0b0101111, &I2CD1, GPIOC, 7U }, { 0b0110000, &I2CD1, GPIOB, 6U }, {
+		0b0110001, &I2CD1, GPIOA, 7U }, { 0b0110010, &I2CD1, GPIOB, 13U }, {
+		0b0110011, &I2CD1, GPIOB, 14U }, { 0b0110100, &I2CD1, GPIOB, 15U }, {
+		0b0110101, &I2CD1, GPIOC, 0U }, { 0b0110110, &I2CD1, GPIOC, 1U }, {
+ 0b0110111, &I2CD1, GPIOB, 0U }, { 0b0111000, &I2CD1, GPIOA, 4U } };*/
 
 msg_t VL53L0X_last_status; // status of last I2C transmission
 
@@ -61,11 +65,9 @@ uint32_t VL53L0X_measurement_timing_budget_us;
  */
 // Public Methods //////////////////////////////////////////////////////////////
 void VL53L0X_setAddress(VL53L0X_board vb) {
-//	VL53L0X_writeReg(vb, I2C_SLAVE_DEVICE_ADDRESS, vb.address & 0x7F);
 	uint8_t txbuf[2] = { I2C_SLAVE_DEVICE_ADDRESS, vb.address & 0x7F };
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, ADDRESS_DEFAULT,
 			txbuf, 2, NULL, 0, TIME_INFINITE);
-//	VL53L0X_address = vb.address;
 }
 
 // Initialize sensor using sequence based on VL53L0X_DataInit(),
@@ -858,36 +860,32 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 		}
 	}
 }
-/*
+
  // Performs a single-shot range measurement and returns the reading in
  // millimeters
  // based on VL53L0X_PerformSingleRangingMeasurement()
- uint16_t VL53L0X::readRangeSingleMillimeters(void)
- {
- writeReg(0x80, 0x01);
- writeReg(0xFF, 0x01);
- writeReg(0x00, 0x00);
- writeReg(0x91, stop_variable);
- writeReg(0x00, 0x01);
- writeReg(0xFF, 0x00);
- writeReg(0x80, 0x00);
+uint16_t VL53L0X_readRangeSingleMillimeters(VL53L0X_board vb) {
+	VL53L0X_writeReg(vb, 0x80, 0x01);
+	VL53L0X_writeReg(vb, 0xFF, 0x01);
+	VL53L0X_writeReg(vb, 0x00, 0x00);
+	VL53L0X_writeReg(vb, 0x91, VL53L0X_stop_variable);
+	VL53L0X_writeReg(vb, 0x00, 0x01);
+	VL53L0X_writeReg(vb, 0xFF, 0x00);
+	VL53L0X_writeReg(vb, 0x80, 0x00);
 
- writeReg(SYSRANGE_START, 0x01);
+	VL53L0X_writeReg(vb, SYSRANGE_START, 0x01);
 
- // "Wait until start bit has been cleared"
- VL53L0X_startTimeout();
- while (readReg(SYSRANGE_START) & 0x01)
- {
- if (VL53L0X_checkTimeoutExpired())
- {
- VL53L0X_did_timeout = true;
- return 65535;
- }
+	// "Wait until start bit has been cleared"
+	VL53L0X_startTimeout();
+	while (VL53L0X_readReg(vb, SYSRANGE_START) & 0x01) {
+		if (VL53L0X_checkTimeoutExpired()) {
+			return 65535;
+		}
+	}
+
+	return VL53L0X_readRangeContinuousMillimeters(vb);
  }
 
- return readRangeContinuousMillimeters();
- }
- */
 
 void VL53L0X_setTimeout(uint16_t timeout) {
 	VL53L0X_io_timeout = timeout;

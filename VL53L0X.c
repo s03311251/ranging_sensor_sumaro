@@ -14,13 +14,14 @@
 #include "chprintf.h"
 
 VL53L0X_board VB[VL53L0X_COUNT] = { { 0b0101010, &I2CD1, GPIOB, 5U }, {
-		0b0101011, &I2CD1, GPIOB, 4U } };/*, { 0b0101100, &I2CD1, GPIOB, 10U }, {
+		0b0101011, &I2CD1, GPIOB, 4U }, { 0b0101100, &I2CD1, GPIOB, 10U }, {
 		0b0101101, &I2CD1, GPIOA, 8U }, { 0b0101110, &I2CD1, GPIOA, 9U }, {
 		0b0101111, &I2CD1, GPIOC, 7U }, { 0b0110000, &I2CD1, GPIOB, 6U }, {
 		0b0110001, &I2CD1, GPIOA, 7U }, { 0b0110010, &I2CD1, GPIOB, 13U }, {
 		0b0110011, &I2CD1, GPIOB, 14U }, { 0b0110100, &I2CD1, GPIOB, 15U }, {
 		0b0110101, &I2CD1, GPIOC, 0U }, { 0b0110110, &I2CD1, GPIOC, 1U }, {
- 0b0110111, &I2CD1, GPIOB, 0U }, { 0b0111000, &I2CD1, GPIOA, 4U } };*/
+		0b0110111, &I2CD1, GPIOB, 0U }, { 0b0111000, &I2CD1, GPIOA, 4U }, {
+		0b0111001, &I2CD1, GPIOA, 1U } };
 
 msg_t VL53L0X_last_status; // status of last I2C transmission
 
@@ -38,7 +39,7 @@ uint32_t VL53L0X_measurement_timing_budget_us;
 #define VL53L0X_startTimeout() (VL53L0X_timeout_start = chVTGetSystemTime())
 
 // Check if timeout is enabled (set to nonzero value) and has expired
-#define VL53L0X_checkTimeoutExpired() (VL53L0X_io_timeout > 0 && chVTTimeElapsedSinceX(VL53L0X_timeout_start) > MS2ST(VL53L0X_io_timeout))
+#define VL53L0X_checkTimeoutExpired(timeout) (timeout > 0 && chVTTimeElapsedSinceX(VL53L0X_timeout_start) > MS2ST(timeout))
 
 // Decode VCSEL (vertical cavity surface emitting laser) pulse period in PCLKs
 // from register value
@@ -66,8 +67,10 @@ uint32_t VL53L0X_measurement_timing_budget_us;
 // Public Methods //////////////////////////////////////////////////////////////
 void VL53L0X_setAddress(VL53L0X_board vb) {
 	uint8_t txbuf[2] = { I2C_SLAVE_DEVICE_ADDRESS, vb.address & 0x7F };
+//	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, ADDRESS_DEFAULT,
+//			txbuf, 2, NULL, 0, TIME_INFINITE);
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, ADDRESS_DEFAULT,
-			txbuf, 2, NULL, 0, TIME_INFINITE);
+			txbuf, 2, NULL, 0, VL53L0X_I2C_TIMEOUT);
 }
 
 // Initialize sensor using sequence based on VL53L0X_DataInit(),
@@ -330,7 +333,7 @@ void VL53L0X_writeReg(VL53L0X_board vb, uint8_t reg, uint8_t value) {
 	txbuf[0] = reg;
 	txbuf[1] = value;
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, txbuf,
-			2, NULL, 0, TIME_INFINITE);
+			2, NULL, 0, VL53L0X_I2C_TIMEOUT);
 }
 
 // Write a 16-bit register
@@ -340,7 +343,7 @@ void VL53L0X_writeReg16Bit(VL53L0X_board vb, uint8_t reg, uint16_t value) {
 	txbuf[1] = (value >> 8) & 0xFF;
 	txbuf[2] = value & 0xFF;
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, txbuf,
-			3, NULL, 0, TIME_INFINITE);
+			3, NULL, 0, VL53L0X_I2C_TIMEOUT);
 }
 
 // Write a 32-bit register
@@ -352,22 +355,22 @@ void VL53L0X_writeReg32Bit(VL53L0X_board vb, uint8_t reg, uint32_t value) {
 	txbuf[3] = (value >> 8) & 0xFF;
 	txbuf[4] = value & 0xFF;
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, txbuf,
-			3, NULL, 0, TIME_INFINITE);
+			3, NULL, 0, VL53L0X_I2C_TIMEOUT);
 }
 
 // Read an 8-bit register
 uint8_t VL53L0X_readReg(VL53L0X_board vb, uint8_t reg) {
-	uint8_t rxbuf;
+	uint8_t rxbuf = 0;
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, &reg, 1,
-			&rxbuf, 1, TIME_INFINITE);
+			&rxbuf, 1, VL53L0X_I2C_TIMEOUT);
 	return rxbuf;
 }
 
 // Read a 16-bit register
 uint16_t VL53L0X_readReg16Bit(VL53L0X_board vb, uint8_t reg) {
-	uint8_t rxbuf[2];
+	uint8_t rxbuf[2] = { 0, 0 };
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, &reg, 1,
-			rxbuf, 2, TIME_INFINITE);
+			rxbuf, 2, VL53L0X_I2C_TIMEOUT);
 
 	uint16_t value;
 	value = (uint16_t) rxbuf[0] << 8; // value high byte
@@ -405,7 +408,7 @@ void VL53L0X_writeMulti(VL53L0X_board vb, uint8_t reg, uint8_t const * src,
 	}
 
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, txbuf,
-			count + 1, NULL, 0, TIME_INFINITE);
+			count + 1, NULL, 0, VL53L0X_I2C_TIMEOUT);
 
 }
 
@@ -414,7 +417,7 @@ void VL53L0X_writeMulti(VL53L0X_board vb, uint8_t reg, uint8_t const * src,
 void VL53L0X_readMulti(VL53L0X_board vb, uint8_t reg, uint8_t * dst,
 		uint8_t count) {
 	VL53L0X_last_status = i2cMasterTransmitTimeout(vb.I2CD, vb.address, &reg, 1,
-			dst, count, TIME_INFINITE);
+			dst, count, VL53L0X_I2C_TIMEOUT);
 }
 
 // Set the return signal rate limit check value in units of MCPS (mega counts
@@ -828,7 +831,7 @@ void VL53L0X_startContinuous(VL53L0X_board vb) {
 uint16_t VL53L0X_readRangeContinuousMillimeters(VL53L0X_board vb) {
 	VL53L0X_startTimeout();
 	while ((VL53L0X_readReg(vb, RESULT_INTERRUPT_STATUS) & 0x07) == 0) {
-		if (VL53L0X_checkTimeoutExpired()) {
+		if (VL53L0X_checkTimeoutExpired(VL53L0X_io_timeout)) {
 //			VL53L0X_did_timeout = true;
 			return 65535;
 		}
@@ -844,21 +847,43 @@ uint16_t VL53L0X_readRangeContinuousMillimeters(VL53L0X_board vb) {
 }
 
 void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
-		uint32_t count) {
-	while (true) {
+		uint32_t count, uint32_t timeout) {
+	VL53L0X_startTimeout();
+	uint32_t success[VL53L0X_COUNT] = { };
+	uint16_t range[VL53L0X_COUNT] = { };
+
+	while (!VL53L0X_checkTimeoutExpired(timeout)) {
 		for (uint32_t i = 0; i < count; i++) {
 			if ((VL53L0X_readReg(vb[i], RESULT_INTERRUPT_STATUS) & 0x07) != 0) {
 				// assumptions: Linearity Corrective Gain is 1000 (default);
 				// fractional ranging is not enabled
-				uint16_t range = VL53L0X_readReg16Bit(vb[i],
+				range[i] = VL53L0X_readReg16Bit(vb[i],
 						RESULT_RANGE_STATUS + 10);
+				success[i]++;
 				VL53L0X_writeReg(vb[i], SYSTEM_INTERRUPT_CLEAR, 0x01);
 
-				BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
-				chprintf(chp, "%2d %5d\r\n", i, range);
+//				BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
+//				chprintf(chp, "%2d %d\r\n", i, range);
 			}
 		}
 	}
+	BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
+	for (uint32_t i = 0; i < 8; i++) {
+		if (success[i] > 0) {
+			chprintf(chp, "%2d: %5d %2d ", i, range[i], success[i]);
+		} else {
+			chprintf(chp, "             ");
+		}
+	}
+	chprintf(chp, "\r\n");
+	for (uint32_t i = 8; i < count; i++) {
+		if (success[i] > 0) {
+			chprintf(chp, "%2d: %5d %2d ", i, range[i], success[i]);
+		} else {
+			chprintf(chp, "             ");
+		}
+	}
+	chprintf(chp, "\r\n\n");
 }
 
  // Performs a single-shot range measurement and returns the reading in
@@ -878,14 +903,13 @@ uint16_t VL53L0X_readRangeSingleMillimeters(VL53L0X_board vb) {
 	// "Wait until start bit has been cleared"
 	VL53L0X_startTimeout();
 	while (VL53L0X_readReg(vb, SYSRANGE_START) & 0x01) {
-		if (VL53L0X_checkTimeoutExpired()) {
+		if (VL53L0X_checkTimeoutExpired(VL53L0X_io_timeout)) {
 			return 65535;
 		}
 	}
 
 	return VL53L0X_readRangeContinuousMillimeters(vb);
- }
-
+}
 
 void VL53L0X_setTimeout(uint16_t timeout) {
 	VL53L0X_io_timeout = timeout;
@@ -931,7 +955,7 @@ _Bool VL53L0X_getSpadInfo(VL53L0X_board vb, uint8_t * count,
 	VL53L0X_writeReg(vb, 0x83, 0x00);
 	VL53L0X_startTimeout();
 	while (VL53L0X_readReg(vb, 0x83) == 0x00) {
-		if (VL53L0X_checkTimeoutExpired()) {
+		if (VL53L0X_checkTimeoutExpired(VL53L0X_io_timeout)) {
 			return false;
 		}
 	}
@@ -1063,7 +1087,7 @@ _Bool VL53L0X_performSingleRefCalibration(VL53L0X_board vb,
 	VL53L0X_startTimeout();
 	while ((VL53L0X_readReg(vb,
 	RESULT_INTERRUPT_STATUS) & 0x07) == 0) {
-		if (VL53L0X_checkTimeoutExpired()) {
+		if (VL53L0X_checkTimeoutExpired(VL53L0X_io_timeout)) {
 			return false;
 		}
 	}

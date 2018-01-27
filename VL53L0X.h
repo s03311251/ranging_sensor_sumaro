@@ -106,8 +106,10 @@ typedef struct VL53L0X_board {
 } VL53L0X_board;
 
 /* Defines VL53L0X boards */
-#define VL53L0X_COUNT 2
+#define VL53L0X_COUNT 16
 extern VL53L0X_board VB[VL53L0X_COUNT];
+
+#define VL53L0X_I2C_TIMEOUT TIME_INFINITE//MS2ST(10)
 
 typedef enum VL53L0X_profile {
 	VL53L0X_HighAccuracy, VL53L0X_HighSpeed //, VL53L0X_LongRange
@@ -150,7 +152,7 @@ void VL53L0X_startContinuous(VL53L0X_board vb);
 // void stopContinuous(void);
 uint16_t VL53L0X_readRangeContinuousMillimeters(VL53L0X_board vb);
 void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
-		uint32_t count);
+		uint32_t count, uint32_t timeout);
 uint16_t VL53L0X_readRangeSingleMillimeters(VL53L0X_board vb);
 
 void VL53L0X_setTimeout(uint16_t timeout);

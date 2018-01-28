@@ -11,9 +11,9 @@ The firmware runs on an STM32 Nucleo64-F401RE board board.
 ## Content
 The program is based on the demo of ChibiOS/RT port for ARM-Cortex-M4 STM32F401.
 
-* `VL53L0X.c` copied from (vl53l0x-arduino
-)[https://github.com/stevemarple/SoftWire] by pololu
-* `softi2c.c` copied from (SoftWire for Arduino)[https://github.com/stevemarple/SoftWire] by stevemarple, but current not being used
+* `VL53L0X.c` copied from [vl53l0x-arduino](https://github.com/stevemarple/SoftWire) by pololu
+* `softi2c.c` copied from [SoftWire for Arduino](https://github.com/stevemarple/SoftWire) by stevemarple, but current not being used
+* `pl_softi2c.c` derived from `softi2c.c`, `pl_softi2c_write()` not finished
 
 ## Instructions
 1. Plug in VL53L0X boards
@@ -24,6 +24,7 @@ The program is based on the demo of ChibiOS/RT port for ARM-Cortex-M4 STM32F401.
 ## Known Bug
 * It won't automatically restart if you unplug a VL53L0X board and plug it again.
 * It rely on external 3.3V power source, so to restart the VL53L0X boards, you have to restart the power source first.
+* `L53L0X_readRangeContinuousMillimeters_loop()` use busy waiting hence is not accurate.
 
 ## Build Procedure
 The demo has been tested by using the free Codesourcery GCC-based toolchain

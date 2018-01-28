@@ -112,7 +112,7 @@ extern VL53L0X_board VB[VL53L0X_COUNT];
 #define VL53L0X_I2C_TIMEOUT TIME_INFINITE//MS2ST(10)
 
 typedef enum VL53L0X_profile {
-	VL53L0X_HighAccuracy, VL53L0X_HighSpeed //, VL53L0X_LongRange
+	VL53L0X_LongRange, VL53L0X_HighAccuracy, VL53L0X_HighSpeed
 } VL53L0X_profile;
 
 typedef enum VL53L0X_vcselPeriodType {
@@ -143,7 +143,8 @@ bool VL53L0X_setSignalRateLimit(VL53L0X_board vb, float limit_Mcps);
 _Bool VL53L0X_setMeasurementTimingBudget(VL53L0X_board vb, uint32_t budget_us);
 uint32_t VL53L0X_getMeasurementTimingBudget(VL53L0X_board vb);
 
-// bool setVcselPulsePeriod(vcselPeriodType type, uint8_t period_pclks);
+_Bool VL53L0X_setVcselPulsePeriod(VL53L0X_board vb,
+		VL53L0X_vcselPeriodType type, uint8_t period_pclks);
 uint8_t VL53L0X_getVcselPulsePeriod(VL53L0X_board vb,
 		VL53L0X_vcselPeriodType type);
 

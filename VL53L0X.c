@@ -17,11 +17,11 @@ VL53L0X_board VB[VL53L0X_COUNT] = { { 0b0101010, &I2CD1, GPIOB, 5U }, {
 		0b0101011, &I2CD1, GPIOB, 4U }, { 0b0101100, &I2CD1, GPIOB, 10U }, {
 		0b0101101, &I2CD1, GPIOA, 8U }, { 0b0101110, &I2CD1, GPIOA, 9U }, {
 		0b0101111, &I2CD1, GPIOC, 7U }, { 0b0110000, &I2CD1, GPIOB, 6U }, {
-		0b0110001, &I2CD1, GPIOA, 7U }, { 0b0110010, &I2CD1, GPIOB, 13U }, {
-		0b0110011, &I2CD1, GPIOB, 14U }, { 0b0110100, &I2CD1, GPIOB, 15U }, {
-		0b0110101, &I2CD1, GPIOC, 0U }, { 0b0110110, &I2CD1, GPIOC, 1U }, {
-		0b0110111, &I2CD1, GPIOB, 0U }, { 0b0111000, &I2CD1, GPIOA, 4U }, {
-		0b0111001, &I2CD1, GPIOA, 1U } };
+		0b0110001, &I2CD1, GPIOA, 7U }, { 0b0110010, &I2CD1, GPIOC, 0U }, {
+		0b0110011, &I2CD1, GPIOC, 1U }, { 0b0110100, &I2CD1, GPIOB, 0U }, {
+		0b0110101, &I2CD1, GPIOA, 4U }, { 0b0110110, &I2CD1, GPIOA, 1U }, {
+		0b0110111, &I2CD1, GPIOB, 15U }, { 0b0111000, &I2CD1, GPIOB, 14U }, {
+		0b0111001, &I2CD1, GPIOB, 13U } };
 
 msg_t VL53L0X_last_status; // status of last I2C transmission
 
@@ -306,7 +306,7 @@ void VL53L0X_setProfile(VL53L0X_board vb, VL53L0X_profile profile) {
 		VL53L0X_setVcselPulsePeriod(vb, VcselPeriodPreRange, 18);
 		VL53L0X_setVcselPulsePeriod(vb, VcselPeriodFinalRange, 14);
 		break;
-	
+
 	case VL53L0X_HighAccuracy:
 		VL53L0X_setMeasurementTimingBudget(vb, 20000);
 		break;
@@ -736,7 +736,7 @@ _Bool VL53L0X_setVcselPulsePeriod(VL53L0X_board vb,
 
 	return true;
 }
- 
+
 // Get the VCSEL pulse period in PCLKs for the given period type.
 // based on VL53L0X_get_vcsel_pulse_period()
 uint8_t VL53L0X_getVcselPulsePeriod(VL53L0X_board vb,
@@ -838,9 +838,12 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 			if ((VL53L0X_readReg(vb[i], RESULT_INTERRUPT_STATUS) & 0x07) != 0) {
 				// assumptions: Linearity Corrective Gain is 1000 (default);
 				// fractional ranging is not enabled
-				range[i] = VL53L0X_readReg16Bit(vb[i],
+				uint16_t current_range = VL53L0X_readReg16Bit(vb[i],
 						RESULT_RANGE_STATUS + 10);
-				success[i]++;
+				if (current_range < 8190) {
+					range[i] += current_range;
+					success[i]++;
+				}
 				VL53L0X_writeReg(vb[i], SYSTEM_INTERRUPT_CLEAR, 0x01);
 
 //				BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
@@ -851,7 +854,8 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 	BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
 	for (uint32_t i = 0; i < 8; i++) {
 		if (success[i] > 0) {
-			chprintf(chp, "%2d: %5d %2d ", i, range[i], success[i]);
+			chprintf(chp, "%2d: %5d %2d ", i, range[i] / success[i],
+					success[i]);
 		} else {
 			chprintf(chp, "             ");
 		}
@@ -859,7 +863,8 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 	chprintf(chp, "\r\n");
 	for (uint32_t i = 8; i < count; i++) {
 		if (success[i] > 0) {
-			chprintf(chp, "%2d: %5d %2d ", i, range[i], success[i]);
+			chprintf(chp, "%2d: %5d %2d ", i, range[i] / success[i],
+					success[i]);
 		} else {
 			chprintf(chp, "             ");
 		}

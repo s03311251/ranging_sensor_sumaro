@@ -307,11 +307,10 @@ void VL53L0X_setProfile(VL53L0X_board vb, VL53L0X_profile profile) {
 		VL53L0X_setVcselPulsePeriod(vb, VcselPeriodFinalRange, 14);
 		break;
 
-	case VL53L0X_HighAccuracy:
+	case VL53L0X_HighSpeed:
 		VL53L0X_setMeasurementTimingBudget(vb, 20000);
 		break;
-
-	case VL53L0X_HighSpeed:
+	case VL53L0X_HighAccuracy:
 		VL53L0X_setMeasurementTimingBudget(vb, 200000);
 		break;
 	}
@@ -831,7 +830,11 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 		uint32_t count, uint32_t timeout) {
 	VL53L0X_startTimeout();
 	uint32_t success[VL53L0X_COUNT] = { };
-	uint16_t range[VL53L0X_COUNT] = { };
+	uint32_t range[VL53L0X_COUNT] = { };
+	uint32_t fail[VL53L0X_COUNT] = { };
+	uint16_t min[VL53L0X_COUNT] = { 8179, 8179, 8179, 8179, 8179, 8179, 8179,
+			8179, 8179, 8179, 8179, 8179, 8179, 8179, 8179, 8179 };
+	uint16_t max[VL53L0X_COUNT] = { };
 
 	while (!VL53L0X_checkTimeoutExpired(timeout)) {
 		for (uint32_t i = 0; i < count; i++) {
@@ -843,7 +846,17 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 				if (current_range < 8190) {
 					range[i] += current_range;
 					success[i]++;
+
+					if (current_range < min[i]) {
+						min[i] = current_range;
+					}
+					if (current_range > max[i]) {
+						max[i] = current_range;
+					}
+				} else {
+					fail[i]++;
 				}
+
 				VL53L0X_writeReg(vb[i], SYSTEM_INTERRUPT_CLEAR, 0x01);
 
 //				BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
@@ -852,21 +865,13 @@ void VL53L0X_readRangeContinuousMillimeters_loop(VL53L0X_board vb[],
 		}
 	}
 	BaseSequentialStream* chp = (BaseSequentialStream*) &SD2;
-	for (uint32_t i = 0; i < 8; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 		if (success[i] > 0) {
-			chprintf(chp, "%2d: %5d %2d ", i, range[i] / success[i],
-					success[i]);
+			chprintf(chp, "%2d: %5d %2d %2d %2d %2d ", i, range[i] / success[i],
+					min[i], max[i], success[i], fail[i]);
 		} else {
-			chprintf(chp, "             ");
-		}
-	}
-	chprintf(chp, "\r\n");
-	for (uint32_t i = 8; i < count; i++) {
-		if (success[i] > 0) {
-			chprintf(chp, "%2d: %5d %2d ", i, range[i] / success[i],
-					success[i]);
-		} else {
-			chprintf(chp, "             ");
+			chprintf(chp, "%2d:       %2d %2d %2d %2d ", i, min[i], max[i],
+					success[i], fail[i]);
 		}
 	}
 	chprintf(chp, "\r\n\n");

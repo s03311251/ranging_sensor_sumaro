@@ -92,7 +92,7 @@ int main(void) {
 		chThdSleepMilliseconds(2);
 		VL53L0X_setAddress(VB[i]);
 		VL53L0X_init(VB[i], true);
-		VL53L0X_setProfile(VB[i], VL53L0X_LongRange);
+//		VL53L0X_setProfile(VB[i], VL53L0X_HighSpeed);
 		VL53L0X_startContinuous(VB[i]);
 	}
 
